@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 180" fill="none">
+  <!-- Dark Green Rounded Container (#0F3D28) -->
+  <rect width="520" height="180" rx="20" fill="#0F3D28" />
+
+  <!-- Potted Plant Icon (Crisp White) -->
+  <g transform="translate(36, 40)">
+    <path d="M50 56 C46 42 42 22 55 9 C67 20 68 39 52 56 Z" fill="#FFFFFF" />
+    <path d="M48 57 C38 48 20 38 18 25 C25 21 39 23 48 42 Z" fill="#FFFFFF" />
+    <path d="M52 57 C58 48 74 38 82 27 C84 35 77 47 54 57 Z" fill="#FFFFFF" />
+    <rect x="22" y="58" width="56" height="10" rx="5" fill="#FFFFFF" />
+    <path d="M27 68 L32 86 C33 90 36 93 40 93 L60 93 C64 93 67 90 68 86 L73 68 Z" fill="#FFFFFF" />
+  </g>
+
+  <!-- GamlaWala White Wordmark -->
+  <g transform="translate(150, 50)">
+    <text x="0" y="52" fill="#FFFFFF" font-family="'Poppins', 'Inter', system-ui, sans-serif" font-size="52" font-weight="800" letter-spacing="-1">GamlaWala</text>
+    <!-- Leaf flourish -->
+    <path d="M272 18 C256 22 250 38 250 38 C250 38 266 38 274 27 C277 23 276 20 272 18 Z" fill="#FFFFFF" />
+
+    <!-- Tagline: — Har Ghar Hariyali — -->
+    <g transform="translate(2, 75)">
+      <line x1="0" y1="0" x2="35" y2="0" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="2" stroke-linecap="round" />
+      <text x="48" y="5" fill="#FFFFFF" font-family="'Inter', system-ui, sans-serif" font-size="16" font-weight="600" letter-spacing="4">HAR GHAR HARIYALI</text>
+      <line x1="260" y1="0" x2="295" y2="0" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="2" stroke-linecap="round" />
+    </g>
+  </g>
+</svg>

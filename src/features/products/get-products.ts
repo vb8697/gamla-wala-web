@@ -1,0 +1,346 @@
+import { createClient } from "@supabase/supabase-js";
+import { Product } from "@/types/database";
+
+export const fallbackProducts: Product[] = [
+  {
+    id: "prod-1",
+    category_id: "cat-1",
+    name: "Golden Money Plant (Pothos)",
+    slug: "money-plant",
+    description: "Traditional auspicious Indian houseplant symbolizing prosperity, good fortune, and abundant positive energy. Features heart-shaped jade leaves splashed with vibrant gold.",
+    care_instructions: {
+      sunlight: "Bright Indirect Sunlight",
+      watering: "Once a week (when topsoil dries)",
+      maintenance: "Beginner Friendly",
+      petFriendly: false,
+    },
+    status: "active",
+    is_featured: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    categories: {
+      name: "Indoor Plants",
+      slug: "indoor-plants",
+    },
+    product_variants: [
+      {
+        id: "var-1",
+        product_id: "prod-1",
+        sku: "GW-MP-001",
+        variant_name: "6-inch Eco Nursery Gamla",
+        price_paise: 29900,
+        compare_at_price_paise: 39900,
+        weight_grams: 1200,
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: "var-1-b",
+        product_id: "prod-1",
+        sku: "GW-MP-001-CER",
+        variant_name: "8-inch Glazed Ceramic Pot",
+        price_paise: 49900,
+        compare_at_price_paise: 64900,
+        weight_grams: 2200,
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+    ],
+    product_images: [
+      {
+        id: "img-1",
+        product_id: "prod-1",
+        storage_path: "https://images.unsplash.com/photo-1596724803273-04ef9647e307?auto=format&fit=crop&w=1000&q=80",
+        alt_text: "Golden Money Plant in Ceramic Pot",
+        sort_order: 1,
+      },
+    ],
+  },
+  {
+    id: "prod-2",
+    category_id: "cat-4",
+    name: "Snake Plant Laurentii (Sansevieria)",
+    slug: "snake-plant-laurentii",
+    description: "NASA-approved top air purifying botanical that releases pure oxygen throughout the night. Virtually indestructible with sword-like variegated golden yellow edges.",
+    care_instructions: {
+      sunlight: "Low to Bright Indirect Light",
+      watering: "Every 10-14 days",
+      maintenance: "Extremely Resilient",
+      petFriendly: false,
+    },
+    status: "active",
+    is_featured: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    categories: {
+      name: "Air Purifying",
+      slug: "air-purifying",
+    },
+    product_variants: [
+      {
+        id: "var-2",
+        product_id: "prod-2",
+        sku: "GW-SNK-002",
+        variant_name: "8-inch Self-Watering Planter",
+        price_paise: 54900,
+        compare_at_price_paise: 69900,
+        weight_grams: 1800,
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+    ],
+    product_images: [
+      {
+        id: "img-2",
+        product_id: "prod-2",
+        storage_path: "https://images.unsplash.com/photo-1599598425947-630b91e988cf?auto=format&fit=crop&w=1000&q=80",
+        alt_text: "Snake Plant Laurentii in White Planter",
+        sort_order: 1,
+      },
+    ],
+  },
+  {
+    id: "prod-3",
+    category_id: "cat-1",
+    name: "Monstera Deliciosa (Swiss Cheese)",
+    slug: "monstera-deliciosa",
+    description: "The magnificent Swiss Cheese plant celebrated for its iconic perforated tropical fenestrations. The ultimate statement focal point for Indian homes and modern workspaces.",
+    care_instructions: {
+      sunlight: "Bright Filtered Light",
+      watering: "When top 2 inches dry",
+      maintenance: "Moderate",
+      petFriendly: false,
+    },
+    status: "active",
+    is_featured: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    categories: {
+      name: "Indoor Plants",
+      slug: "indoor-plants",
+    },
+    product_variants: [
+      {
+        id: "var-3",
+        product_id: "prod-3",
+        sku: "GW-MONS-003",
+        variant_name: "10-inch Handcrafted Terracotta Gamla",
+        price_paise: 89900,
+        compare_at_price_paise: 119900,
+        weight_grams: 3200,
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+    ],
+    product_images: [
+      {
+        id: "img-3",
+        product_id: "prod-3",
+        storage_path: "https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=1000&q=80",
+        alt_text: "Monstera Deliciosa in living room",
+        sort_order: 1,
+      },
+    ],
+  },
+  {
+    id: "prod-4",
+    category_id: "cat-2",
+    name: "Sacred Shyam Tulsi (Holy Basil)",
+    slug: "shyam-tulsi",
+    description: "Revered sacred Indian botanical possessing therapeutic, air-purifying, and spiritual significance. Rich in antioxidants and calming herbal aroma.",
+    care_instructions: {
+      sunlight: "Direct Morning Sunlight (4-6 hrs)",
+      watering: "Daily light watering",
+      maintenance: "Easy",
+      petFriendly: true,
+    },
+    status: "active",
+    is_featured: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    categories: {
+      name: "Outdoor Plants",
+      slug: "outdoor-plants",
+    },
+    product_variants: [
+      {
+        id: "var-4",
+        product_id: "prod-4",
+        sku: "GW-TUL-004",
+        variant_name: "Traditional Handcrafted Earthen Gamla",
+        price_paise: 19900,
+        compare_at_price_paise: 29900,
+        weight_grams: 1000,
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+    ],
+    product_images: [
+      {
+        id: "img-4",
+        product_id: "prod-4",
+        storage_path: "https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=1000&q=80",
+        alt_text: "Sacred Shyam Tulsi in Clay Pot",
+        sort_order: 1,
+      },
+    ],
+  },
+  {
+    id: "prod-5",
+    category_id: "cat-1",
+    name: "Peace Lily (Spathiphyllum)",
+    slug: "peace-lily",
+    description: "Elegant white blooms with glossy dark emerald leaves. Signifies tranquility and removes toxic airborne benzene, formaldehyde, and carbon monoxide.",
+    care_instructions: {
+      sunlight: "Shade to Medium Light",
+      watering: "When leaves start to droop slightly",
+      maintenance: "Easy",
+      petFriendly: false,
+    },
+    status: "active",
+    is_featured: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    categories: {
+      name: "Indoor Plants",
+      slug: "indoor-plants",
+    },
+    product_variants: [
+      {
+        id: "var-5",
+        product_id: "prod-5",
+        sku: "GW-PL-005",
+        variant_name: "7-inch Ceramic Planter",
+        price_paise: 44900,
+        compare_at_price_paise: 59900,
+        weight_grams: 1600,
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+    ],
+    product_images: [
+      {
+        id: "img-5",
+        product_id: "prod-5",
+        storage_path: "https://images.unsplash.com/photo-1593482892290-f54927ae1bf6?auto=format&fit=crop&w=1000&q=80",
+        alt_text: "Peace Lily with White Blossom",
+        sort_order: 1,
+      },
+    ],
+  },
+  {
+    id: "prod-6",
+    category_id: "cat-4",
+    name: "Areca Palm (Butterfly Palm)",
+    slug: "areca-palm",
+    description: "Graceful feathery fronds that bring a lush tropical oasis vibe indoors while serving as a natural room humidifier.",
+    care_instructions: {
+      sunlight: "Bright Filtered Sunlight",
+      watering: "Twice a week in summer",
+      maintenance: "Moderate",
+      petFriendly: true,
+    },
+    status: "active",
+    is_featured: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    categories: {
+      name: "Air Purifying",
+      slug: "air-purifying",
+    },
+    product_variants: [
+      {
+        id: "var-6",
+        product_id: "prod-6",
+        sku: "GW-AP-006",
+        variant_name: "12-inch Premium Nursery Gamla",
+        price_paise: 79900,
+        compare_at_price_paise: 109900,
+        weight_grams: 4000,
+        is_active: true,
+        created_at: new Date().toISOString(),
+      },
+    ],
+    product_images: [
+      {
+        id: "img-6",
+        product_id: "prod-6",
+        storage_path: "https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=1000&q=80",
+        alt_text: "Areca Palm in Living Room",
+        sort_order: 1,
+      },
+    ],
+  },
+];
+
+export async function getProducts(): Promise<Product[]> {
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    if (!supabaseUrl || !supabaseKey || supabaseUrl.includes("YOUR_PROJECT")) {
+      return fallbackProducts;
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { data, error } = await supabase
+      .from("products")
+      .select(`
+        id,
+        name,
+        slug,
+        botanical_name,
+        description,
+        care_instructions,
+        tags,
+        is_featured,
+        rating,
+        review_count,
+        categories (name, slug),
+        product_variants (
+          id,
+          sku,
+          variant_name,
+          price_paise,
+          compare_at_price_paise,
+          weight_grams,
+          pot_size,
+          height_approx,
+          is_active
+        ),
+        product_images (
+          storage_path,
+          alt_text,
+          sort_order
+        )
+      `)
+      .eq("status", "active")
+      .order("created_at", { ascending: false });
+
+    if (error || !data || data.length === 0) {
+      console.warn("Using fallback products catalog:", error?.message);
+      return fallbackProducts;
+    }
+
+    return (data as unknown as Product[]) ?? fallbackProducts;
+  } catch (err) {
+    console.warn("Supabase fetch failed, returning initial botanical catalog:", err);
+    return fallbackProducts;
+  }
+}
+
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  const products = await getProducts();
+  const directMatch = products.find((p) => p.slug === slug);
+  if (directMatch) return directMatch;
+
+  // Handle common slug variations (e.g. golden-money-plant <-> money-plant)
+  return (
+    products.find(
+      (p) =>
+        p.slug.includes(slug) ||
+        slug.includes(p.slug) ||
+        p.name.toLowerCase().includes(slug.replace(/-/g, ' '))
+    ) ?? null
+  );
+}

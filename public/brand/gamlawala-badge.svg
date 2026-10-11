@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Outer Circle Ring -->
+  <circle cx="100" cy="100" r="96" fill="#0F3D28" stroke="#1B5E3B" stroke-width="2" />
+  <circle cx="100" cy="100" r="88" stroke="#F8F6EE" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.4" />
+  <circle cx="100" cy="100" r="82" stroke="#F8F6EE" stroke-width="1.5" />
+
+  <!-- Center Plant Mark (White) -->
+  <g transform="translate(50, 50)">
+    <path d="M50 56 C46 42 42 22 55 9 C67 20 68 39 52 56 Z" fill="#FFFFFF" />
+    <path d="M48 57 C38 48 20 38 18 25 C25 21 39 23 48 42 Z" fill="#FFFFFF" />
+    <path d="M52 57 C58 48 74 38 82 27 C84 35 77 47 54 57 Z" fill="#FFFFFF" />
+    <rect x="22" y="58" width="56" height="10" rx="5" fill="#FFFFFF" />
+    <path d="M27 68 L32 86 C33 90 36 93 40 93 L60 93 C64 93 67 90 68 86 L73 68 Z" fill="#FFFFFF" />
+  </g>
+
+  <!-- Flanking Leaf Accents -->
+  <path d="M26 100 C24 96 28 92 30 96 C30 100 28 102 26 100 Z" fill="#6BAF7B" />
+  <path d="M174 100 C172 96 176 92 178 96 C178 100 176 102 174 100 Z" fill="#6BAF7B" />
+
+  <defs>
+    <path id="badgeTopArc" d="M 32 100 A 68 68 0 0 1 168 100" />
+    <path id="badgeBottomArc" d="M 168 104 A 68 68 0 0 1 32 104" />
+  </defs>
+
+  <text fill="#F8F6EE" font-size="15" font-weight="800" letter-spacing="2" font-family="'Poppins', system-ui, sans-serif">
+    <textPath href="#badgeTopArc" startOffset="50%" text-anchor="middle">
+      GamlaWala
+    </textPath>
+  </text>
+
+  <text fill="#6BAF7B" font-size="10" font-weight="700" letter-spacing="2.5" font-family="'Inter', system-ui, sans-serif">
+    <textPath href="#badgeBottomArc" startOffset="50%" text-anchor="middle">
+      Har Ghar Hariyali
+    </textPath>
+  </text>
+</svg>
