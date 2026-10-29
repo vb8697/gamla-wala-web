@@ -11,6 +11,9 @@ import {
   SeedsGardeningIcon,
 } from '@/components/brand/CategoryIcons';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function HomePage() {
   const products = await getProducts();
   const featuredPlants = products.filter((p) => p.is_featured);

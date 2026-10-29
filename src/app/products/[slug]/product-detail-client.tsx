@@ -19,6 +19,7 @@ import {
 import { PincodeChecker } from '@/components/PincodeChecker';
 import { SITE } from '@/config/site';
 import { productTypeOf } from '@/config/catalog';
+import { resolveProductImageUrl, DEFAULT_PLANT_IMAGE } from '@/lib/images';
 
 export function ProductDetailClient({ product, pairedPots = [] }: { product: Product; pairedPots?: Product[] }) {
   const { addItem } = useCart();
@@ -34,9 +35,10 @@ export function ProductDetailClient({ product, pairedPots = [] }: { product: Pro
     compare_at_price_paise: 39900,
   };
 
-  const imageSrc =
-    product.product_images?.[0]?.storage_path ||
-    'https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=1000&q=80';
+  const primaryImg =
+    product.product_images?.find((img) => img.is_primary)?.storage_path ||
+    product.product_images?.[0]?.storage_path;
+  const [imageSrc, setImageSrc] = useState(resolveProductImageUrl(primaryImg));
 
   const isPlant = productTypeOf(product.categories?.slug) === 'plants';
 
@@ -65,6 +67,7 @@ export function ProductDetailClient({ product, pairedPots = [] }: { product: Pro
             <img
               src={imageSrc}
               alt={product.name}
+              onError={() => setImageSrc(DEFAULT_PLANT_IMAGE)}
               className="w-full h-full object-cover"
             />
             {product.is_featured && (
@@ -212,7 +215,7 @@ export function ProductDetailClient({ product, pairedPots = [] }: { product: Pro
                     <div key={pot.id} className="flex items-center gap-3 bg-white rounded-2xl border border-forest-900/5 shadow-sm p-3">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={pot.product_images?.[0]?.storage_path || ''}
+                        src={resolveProductImageUrl(pot.product_images?.[0]?.storage_path)}
                         alt={pot.name}
                         className="w-14 h-14 rounded-xl object-cover bg-cream-100"
                       />

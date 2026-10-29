@@ -4,6 +4,9 @@ import { getProductBySlug, getProducts } from '@/features/products/get-products'
 import { productTypeOf } from '@/config/catalog';
 import { ProductDetailClient } from './product-detail-client';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function ProductDetailPage({
   params,
 }: {

@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Sun, Droplet, Check, ShoppingBag, ArrowUpRight, Heart } from 'lucide-react';
 import { Product, formatPaise } from '@/types/database';
 import { useCart } from '@/features/cart/cart-context';
 import { useWishlist } from '@/features/wishlist/wishlist-context';
+import { resolveProductImageUrl, DEFAULT_PLANT_IMAGE } from '@/lib/images';
 
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
@@ -22,9 +23,16 @@ export function ProductCard({ product }: { product: Product }) {
     compare_at_price_paise: 39900,
   };
 
-  const imageSrc =
-    product.product_images?.[0]?.storage_path ||
-    'https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=800&q=80';
+  const rawImageSrc =
+    product.product_images?.find((img) => img.is_primary)?.storage_path ||
+    product.product_images?.[0]?.storage_path;
+  const initialImage = resolveProductImageUrl(rawImageSrc);
+  const [currentImageSrc, setCurrentImageSrc] = useState(initialImage);
+
+  // Sync image if product prop changes
+  useEffect(() => {
+    setCurrentImageSrc(resolveProductImageUrl(rawImageSrc));
+  }, [rawImageSrc]);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -50,8 +58,9 @@ export function ProductCard({ product }: { product: Product }) {
       <Link href={`/products/${product.slug}`} className="relative aspect-[4/5] overflow-hidden bg-cream-100 block">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={imageSrc}
+          src={currentImageSrc}
           alt={product.name}
+          onError={() => setCurrentImageSrc(DEFAULT_PLANT_IMAGE)}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
         />
 

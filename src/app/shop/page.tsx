@@ -6,6 +6,9 @@ import { Leaf } from 'lucide-react';
 import { SITE } from '@/config/site';
 import { CATALOG_GROUPS, productTypeOf, ProductType } from '@/config/catalog';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function ShopPage({
   searchParams,
 }: {

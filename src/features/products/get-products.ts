@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { Product } from "@/types/database";
+import { resolveProductImageUrl } from "@/lib/images";
 
 export const fallbackProducts: Product[] = [
   {
@@ -368,7 +369,8 @@ export async function getProducts(): Promise<Product[]> {
         product_images (
           storage_path,
           alt_text,
-          sort_order
+          sort_order,
+          is_primary
         )
       `)
       .eq("status", "active")
@@ -379,7 +381,22 @@ export async function getProducts(): Promise<Product[]> {
       return fallbackProducts;
     }
 
-    return (data as unknown as Product[]) ?? fallbackProducts;
+    const mapped = (data as unknown as Product[]).map((p) => {
+      const imgs = (p.product_images || []).slice().sort((a, b) => {
+        if (a.is_primary && !b.is_primary) return -1;
+        if (!a.is_primary && b.is_primary) return 1;
+        return (a.sort_order ?? 0) - (b.sort_order ?? 0);
+      });
+      return {
+        ...p,
+        product_images: imgs.map((img) => ({
+          ...img,
+          storage_path: resolveProductImageUrl(img.storage_path),
+        })),
+      };
+    });
+
+    return mapped.length > 0 ? mapped : fallbackProducts;
   } catch (err) {
     console.warn("Supabase fetch failed, returning initial botanical catalog:", err);
     return fallbackProducts;
