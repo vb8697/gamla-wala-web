@@ -1,11 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+const FALLBACK_URL = "https://bfxktbtobusflbvbiotb.supabase.co";
+const FALLBACK_KEY = "sb_publishable_85D2M33SYckSQtlO--tEFQ_VSpxOjGO";
+
 export async function createClient() {
   const cookieStore = await cookies();
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "placeholder-key";
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || FALLBACK_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || FALLBACK_KEY;
 
   return createServerClient(url, key, {
     cookies: {

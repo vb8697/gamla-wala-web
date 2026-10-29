@@ -327,10 +327,13 @@ fallbackProducts.push(
   sampleItem(6, { name: "Vermicompost (3 kg)", slug: "vermicompost", desc: "Natural, nutrient-rich compost that feeds your plants slowly. Mix a handful into the topsoil every month.", cat: SOIL, img: IMG_SOIL, variants: [["3 kg", 19900, null]] }),
 );
 
+const FALLBACK_URL = "https://bfxktbtobusflbvbiotb.supabase.co";
+const FALLBACK_KEY = "sb_publishable_85D2M33SYckSQtlO--tEFQ_VSpxOjGO";
+
 export async function getProducts(): Promise<Product[]> {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || FALLBACK_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || FALLBACK_KEY;
     if (!supabaseUrl || !supabaseKey || supabaseUrl.includes("YOUR_PROJECT")) {
       return fallbackProducts;
     }
