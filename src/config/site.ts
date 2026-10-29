@@ -41,8 +41,8 @@ export const SITE = {
   gstin: process.env.NEXT_PUBLIC_GSTIN || '',
   instagram: process.env.NEXT_PUBLIC_INSTAGRAM_URL || '',
   hours: '9 AM – 8 PM, all days',
-  freeDeliveryAbovePaise: 49900,
-  deliveryFeePaise: 7000,
+  freeDeliveryAbovePaise: 0,
+  deliveryFeePaise: 0,
 } as const;
 
 export function whatsappLink(message: string): string {

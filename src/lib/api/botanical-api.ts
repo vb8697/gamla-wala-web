@@ -40,10 +40,10 @@ export function calculateBotanicalPricing(
   }
 
   const taxablePaise = Math.max(0, subtotalPaise - discountPaise);
-  const isFreeShipping = taxablePaise >= SITE.freeDeliveryAbovePaise;
-  const shippingPaise = isFreeShipping ? 0 : SITE.deliveryFeePaise;
-  const taxPaise = Math.round(taxablePaise * 0.05); // 5% GST on botanical items
-  const totalPaise = taxablePaise + shippingPaise + taxPaise;
+  const isFreeShipping = subtotalPaise === 0 || SITE.deliveryFeePaise === 0 || taxablePaise >= SITE.freeDeliveryAbovePaise;
+  const shippingPaise = (subtotalPaise === 0 || isFreeShipping) ? 0 : SITE.deliveryFeePaise;
+  const taxPaise = subtotalPaise === 0 ? 0 : Math.round(taxablePaise * 0.05); // 5% GST on botanical items
+  const totalPaise = subtotalPaise === 0 ? 0 : (taxablePaise + shippingPaise + taxPaise);
 
   return {
     subtotalPaise,

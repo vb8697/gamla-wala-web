@@ -32,3 +32,4 @@ export function resolveProductImageUrl(path?: string | null): string {
 
   return `${supabaseUrl}/storage/v1/object/public/product-images/${clean}`;
 }
+
