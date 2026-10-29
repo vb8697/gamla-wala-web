@@ -331,7 +331,15 @@ fallbackProducts.push(
 const FALLBACK_URL = "https://bfxktbtobusflbvbiotb.supabase.co";
 const FALLBACK_KEY = "sb_publishable_85D2M33SYckSQtlO--tEFQ_VSpxOjGO";
 
-export async function getProducts(): Promise<Product[]> {
+let memoryCache: { data: Product[]; expiresAt: number } | null = null;
+const CACHE_TTL_MS = 30_000; // 30-second cache to make navigation instant
+
+export async function getProducts(forceRefresh = false): Promise<Product[]> {
+  const now = Date.now();
+  if (!forceRefresh && memoryCache && memoryCache.expiresAt > now) {
+    return memoryCache.data;
+  }
+
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || FALLBACK_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || FALLBACK_KEY;
@@ -396,7 +404,9 @@ export async function getProducts(): Promise<Product[]> {
       };
     });
 
-    return mapped.length > 0 ? mapped : fallbackProducts;
+    const result = mapped.length > 0 ? mapped : fallbackProducts;
+    memoryCache = { data: result, expiresAt: now + CACHE_TTL_MS };
+    return result;
   } catch (err) {
     console.warn("Supabase fetch failed, returning initial botanical catalog:", err);
     return fallbackProducts;
