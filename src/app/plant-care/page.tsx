@@ -1,6 +1,13 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { Sun, Droplet, Wind, ShieldAlert, Sparkles, Check, Leaf } from 'lucide-react';
 import Link from 'next/link';
+import { SITE } from '@/config/site';
+
+export const metadata: Metadata = {
+  title: `Plant Care Guide & Maintenance Tips | ${SITE.name}`,
+  description: `Expert botanical care guide for indoor plants, watering schedule, sunlight requirements, and super-drainage potting mix in ${SITE.city}, ${SITE.state}.`,
+};
 
 export default function PlantCarePage() {
   return (

@@ -8,6 +8,11 @@ import { CATALOG_GROUPS, productTypeOf, ProductType } from '@/config/catalog';
 
 export const revalidate = 30;
 
+export const metadata = {
+  title: `Shop Botanical Plants, Ceramic Pots & Gamlas | ${SITE.name}`,
+  description: `Explore air-purifying indoor plants, flowering varieties, and handcrafted terracotta gamlas with doorstep delivery in ${SITE.city}, ${SITE.state}.`,
+};
+
 export default async function ShopPage({
   searchParams,
 }: {

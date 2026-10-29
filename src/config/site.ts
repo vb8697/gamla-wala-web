@@ -31,6 +31,7 @@ export const PRIMARY_AREA = SERVICE_AREAS[0];
 export const SITE = {
   name: 'GamlaWala',
   tagline: 'Har Ghar Hariyali',
+  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://gamlawala.com',
   city: PRIMARY_AREA.city,
   state: PRIMARY_AREA.state,
   defaultPincode: PRIMARY_AREA.pincodes[0],
