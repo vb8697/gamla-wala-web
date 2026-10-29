@@ -3,8 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/features/auth/auth-context';
-import { GoogleSignInButton } from '@/components/GoogleSignInButton';
-import { User, LogOut, Package, Leaf, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { User, LogOut, Package, Leaf, ChevronDown, CheckCircle2, Sparkles, Heart, MapPin } from 'lucide-react';
 
 const GoogleIcon = () => (
   <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24">
@@ -35,11 +34,14 @@ export function UserNav() {
     return (
       <Link
         href="/login?next=/cart"
-        className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-white border border-forest-800/20 text-forest-900 hover:bg-cream-100 hover:border-forest-600 shadow-xs transition-all active:scale-95"
-        title="Sign in with Google"
+        className="flex items-center gap-2 pl-2.5 pr-3 py-1.5 text-xs font-bold rounded-full bg-white hover:bg-cream-50 border border-forest-800/20 text-forest-950 shadow-2xs hover:shadow-xs transition-all active:scale-95 group"
+        title="Sign in with Google - Instant Access"
       >
         <GoogleIcon />
-        <span>Sign In</span>
+        <span className="font-semibold text-xs text-forest-950">Sign In</span>
+        <span className="hidden lg:inline-flex text-[9px] bg-sage-100 text-forest-800 font-medium px-1.5 py-0.2 rounded-full border border-sage-200">
+          ₹100 Off
+        </span>
       </Link>
     );
   }
@@ -51,7 +53,7 @@ export function UserNav() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-cream-100 hover:bg-cream-200 border border-forest-800/15 text-forest-950 transition-all active:scale-95 text-xs font-semibold"
+        className="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full bg-cream-100/80 hover:bg-cream-200/80 border border-forest-800/15 text-forest-950 transition-all active:scale-95 text-xs font-semibold group shadow-2xs"
         aria-label="User Account Menu"
       >
         {profile.avatarUrl ? (
@@ -59,41 +61,65 @@ export function UserNav() {
           <img
             src={profile.avatarUrl}
             alt={profile.fullName}
-            className="w-6 h-6 rounded-full object-cover border border-forest-700/20"
+            className="w-6 h-6 rounded-full object-cover ring-2 ring-sage-400/80 ring-offset-1"
           />
         ) : (
-          <div className="w-6 h-6 rounded-full bg-forest-900 text-cream-50 flex items-center justify-center text-[11px] font-bold">
+          <div className="w-6 h-6 rounded-full bg-forest-900 text-cream-50 flex items-center justify-center text-[11px] font-bold ring-2 ring-sage-400/80 ring-offset-1">
             {firstName.charAt(0).toUpperCase()}
           </div>
         )}
-        <span className="hidden sm:inline max-w-[90px] truncate">{firstName}</span>
-        <ChevronDown className="w-3 h-3 text-forest-700/60" />
+        <span className="hidden sm:inline max-w-[85px] truncate font-bold text-forest-950">
+          {firstName}
+        </span>
+        <ChevronDown
+          className={`w-3 h-3 text-forest-700/60 transition-transform duration-200 ${
+            dropdownOpen ? 'rotate-180' : ''
+          }`}
+        />
       </button>
 
       {dropdownOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-forest-800/15 py-2 z-50 text-left animate-in fade-in slide-in-from-top-2 duration-150">
-          <div className="px-4 py-2.5 border-b border-forest-800/10">
+        <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-forest-800/15 py-2.5 z-50 text-left animate-in fade-in slide-in-from-top-2 duration-150">
+          {/* User Profile Card */}
+          <div className="px-4 py-2 border-b border-forest-800/10">
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-heading font-bold text-sm text-forest-950 truncate block">
+              <span className="font-heading font-medium text-sm text-forest-950 truncate block">
                 {profile.fullName}
               </span>
               <CheckCircle2 className="w-3.5 h-3.5 text-sage-600 flex-shrink-0" />
             </div>
             <p className="text-xs text-forest-800/60 truncate">{profile.email}</p>
-            <div className="mt-2 inline-flex items-center gap-1 text-[10px] bg-forest-50 border border-forest-200 text-forest-700 px-2 py-0.5 rounded-full font-medium">
+            <div className="mt-2 inline-flex items-center gap-1 text-[10px] bg-forest-50 border border-forest-200 text-forest-700 px-2 py-0.5 rounded-full font-bold">
               <Leaf className="w-2.5 h-2.5 text-sage-600" />
-              Verified Plant Parent
+              Verified Plant Parent 🌱
             </div>
           </div>
 
+          {/* Navigation Links */}
           <div className="py-1">
+            <Link
+              href="/profile"
+              onClick={() => setDropdownOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-forest-900 hover:bg-cream-100 transition-colors"
+            >
+              <User className="w-4 h-4 text-forest-700" />
+              <span>My Profile &amp; Account</span>
+            </Link>
+            <Link
+              href="/profile?tab=addresses"
+              onClick={() => setDropdownOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-forest-900 hover:bg-cream-100 transition-colors"
+            >
+              <MapPin className="w-4 h-4 text-sage-600" />
+              <span>Saved Delivery Addresses</span>
+            </Link>
             <Link
               href="/cart"
               onClick={() => setDropdownOpen(false)}
               className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-forest-900 hover:bg-cream-100 transition-colors"
             >
               <Package className="w-4 h-4 text-forest-700" />
-              <span>My Botanical Cart &amp; Orders</span>
+              <span>My Cart &amp; Confirmed Orders</span>
             </Link>
             <Link
               href="/plant-care"
@@ -101,10 +127,19 @@ export function UserNav() {
               className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-forest-900 hover:bg-cream-100 transition-colors"
             >
               <Leaf className="w-4 h-4 text-sage-600" />
-              <span>Plant Care Reminders</span>
+              <span>Plant Care &amp; Watering Schedule</span>
+            </Link>
+            <Link
+              href="/shop"
+              onClick={() => setDropdownOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-forest-900 hover:bg-cream-100 transition-colors"
+            >
+              <Sparkles className="w-4 h-4 text-terracotta-600" />
+              <span>Explore New Plant Arrivals</span>
             </Link>
           </div>
 
+          {/* Logout Action */}
           <div className="border-t border-forest-800/10 pt-1 mt-1">
             <button
               onClick={() => {

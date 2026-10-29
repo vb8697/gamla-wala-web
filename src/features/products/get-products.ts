@@ -273,6 +273,60 @@ export const fallbackProducts: Product[] = [
   },
 ];
 
+// Sample (placeholder) catalogue entries for non-plant categories. Replace with real products in Supabase.
+function sampleItem(
+  n: number,
+  o: {
+    name: string; slug: string; desc: string; cat: { name: string; slug: string };
+    img: string; variants: [string, number, number | null][]; care?: Product["care_instructions"];
+    featured?: boolean;
+  }
+): Product {
+  const id = `prod-s${n}`;
+  const now = new Date().toISOString();
+  return {
+    id,
+    category_id: `cat-s${n}`,
+    name: o.name,
+    slug: o.slug,
+    description: o.desc,
+    care_instructions: o.care ?? {},
+    status: "active",
+    is_featured: !!o.featured,
+    created_at: now,
+    updated_at: now,
+    categories: o.cat,
+    product_variants: o.variants.map(([variant_name, price_paise, compare], i) => ({
+      id: `${id}-v${i}`,
+      product_id: id,
+      sku: `GW-S${n}-${i}`,
+      variant_name,
+      price_paise,
+      compare_at_price_paise: compare,
+      weight_grams: null,
+      is_active: true,
+      created_at: now,
+    })),
+    product_images: [{ id: `${id}-img`, product_id: id, storage_path: o.img, alt_text: o.name, sort_order: 1 }],
+  };
+}
+
+const POTS = { name: "Gamlas & Pots", slug: "pots-planters" };
+const SUCC = { name: "Succulents", slug: "succulents" };
+const SOIL = { name: "Soil & Nutrition", slug: "seeds-gardening" };
+const IMG_POT = "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=1000&q=80";
+const IMG_SUCC = "https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=1000&q=80";
+const IMG_SOIL = "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1000&q=80";
+
+fallbackProducts.push(
+  sampleItem(1, { name: "Classic Terracotta Gamla", slug: "classic-terracotta-gamla", desc: "Handmade earthen pot with a drainage hole. Naturally breathable, so roots stay healthy and cool in summer.", cat: POTS, img: IMG_POT, variants: [["6 inch", 14900, 19900], ["8 inch", 24900, 29900], ["10 inch", 39900, null]], featured: true }),
+  sampleItem(2, { name: "Painted Ceramic Planter", slug: "painted-ceramic-planter", desc: "Glazed ceramic planter that suits desks, shelves and balconies. Includes a matching saucer.", cat: POTS, img: IMG_POT, variants: [["Small", 29900, 39900], ["Medium", 49900, 64900]] }),
+  sampleItem(3, { name: "Jade Succulent", slug: "jade-succulent", desc: "Thick glossy leaves and very low maintenance. Needs sun and only a little water.", cat: SUCC, img: IMG_SUCC, variants: [["4 inch pot", 19900, 24900]], care: { sunlight: "Bright light, some direct sun", watering: "Every 10-14 days", maintenance: "Beginner Friendly", petFriendly: false }, featured: true }),
+  sampleItem(4, { name: "Mixed Succulent Set (3 pcs)", slug: "mixed-succulent-set", desc: "Three assorted succulents in small pots, ready to display on a desk or windowsill.", cat: SUCC, img: IMG_SUCC, variants: [["Set of 3", 34900, 44900]], care: { sunlight: "Bright indirect light", watering: "Every 10-14 days", maintenance: "Beginner Friendly" } }),
+  sampleItem(5, { name: "Organic Potting Mix (5 kg)", slug: "organic-potting-mix", desc: "Ready-to-use mix of cocopeat, vermicompost, perlite and neem cake for healthy roots and good drainage.", cat: SOIL, img: IMG_SOIL, variants: [["2 kg", 14900, null], ["5 kg", 29900, 34900]] }),
+  sampleItem(6, { name: "Vermicompost (3 kg)", slug: "vermicompost", desc: "Natural, nutrient-rich compost that feeds your plants slowly. Mix a handful into the topsoil every month.", cat: SOIL, img: IMG_SOIL, variants: [["3 kg", 19900, null]] }),
+);
+
 export async function getProducts(): Promise<Product[]> {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

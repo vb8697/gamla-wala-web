@@ -2,12 +2,15 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Sun, Droplet, Check, ShoppingBag, ArrowUpRight } from 'lucide-react';
+import { Sun, Droplet, Check, ShoppingBag, ArrowUpRight, Heart } from 'lucide-react';
 import { Product, formatPaise } from '@/types/database';
 import { useCart } from '@/features/cart/cart-context';
+import { useWishlist } from '@/features/wishlist/wishlist-context';
 
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const saved = isInWishlist(product.id);
   const variants = product.product_variants || [];
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [added, setAdded] = useState(false);
@@ -42,9 +45,9 @@ export function ProductCard({ product }: { product: Product }) {
       : null;
 
   return (
-    <div className="group bg-white rounded-2xl overflow-hidden border border-forest-800/10 hover:border-forest-700/30 hover:shadow-xl transition-all duration-300 flex flex-col">
+    <div className="group relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 flex flex-col">
       {/* Product Image Frame */}
-      <Link href={`/products/${product.slug}`} className="relative aspect-square overflow-hidden bg-cream-100 block">
+      <Link href={`/products/${product.slug}`} className="relative aspect-[4/5] overflow-hidden bg-cream-100 block">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageSrc}
@@ -71,13 +74,22 @@ export function ProductCard({ product }: { product: Product }) {
           <ArrowUpRight className="w-4 h-4" />
         </div>
       </Link>
+      <button
+        type="button"
+        onClick={() => toggleWishlist(product.id)}
+        aria-label={saved ? 'Remove from wishlist' : 'Save to wishlist'}
+        aria-pressed={saved}
+        className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-sm hover:scale-110 transition-transform"
+      >
+        <Heart className={`w-4 h-4 ${saved ? 'fill-terracotta-500 text-terracotta-500' : 'text-forest-800'}`} />
+      </button>
 
       {/* Product Details Content */}
-      <div className="p-5 flex-1 flex flex-col justify-between">
+      <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between">
         <div>
           {/* Category Chip & Rating */}
           <div className="flex items-center justify-between gap-2 mb-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-sage-600 block">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-terracotta-600 block">
               {product.categories?.name || 'Live Botanicals'}
             </span>
             {product.rating && (
@@ -88,7 +100,7 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
 
           <Link href={`/products/${product.slug}`} className="block">
-            <h3 className="font-heading font-bold text-base text-forest-950 group-hover:text-forest-700 transition-colors line-clamp-1">
+            <h3 className="font-heading font-medium text-lg text-forest-950 group-hover:text-forest-700 transition-colors line-clamp-1">
               {product.name}
             </h3>
             {product.botanical_name && (
@@ -139,7 +151,7 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="pt-3 border-t border-forest-800/10 flex items-center justify-between mt-2">
           <div>
             <div className="flex items-baseline gap-2">
-              <span className="text-lg font-bold font-heading text-forest-950">
+              <span className="text-lg font-medium font-heading text-forest-950">
                 {formatPaise(activeVariant.price_paise)}
               </span>
               {activeVariant.compare_at_price_paise && (
@@ -149,13 +161,13 @@ export function ProductCard({ product }: { product: Product }) {
               )}
             </div>
             <span className="text-[10px] text-sage-600 font-medium block">
-              Inclusive of GST
+              Inclusive of all taxes
             </span>
           </div>
 
           <button
             onClick={handleAddToCart}
-            className={`px-3.5 py-2 rounded-xl font-medium text-xs flex items-center gap-1.5 transition-all shadow-sm ${
+            className={`px-2.5 sm:px-3.5 py-2 rounded-full font-medium text-xs flex items-center gap-1.5 transition-all shadow-sm ${
               added
                 ? 'bg-sage-500 text-forest-950 scale-95'
                 : 'bg-forest-900 hover:bg-forest-800 text-cream-50 hover:shadow-md'

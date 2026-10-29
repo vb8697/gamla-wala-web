@@ -37,14 +37,14 @@ function LoginContent() {
             <GamlaWalaLogo variant="horizontal" size="lg" />
           </div>
           <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-forest-600 block mb-1">
+            <span className="eyebrow block mb-2">
               Har Ghar Hariyali 🌱
             </span>
-            <h1 className="text-2xl font-extrabold font-heading text-forest-950">
+            <h1 className="text-2xl font-medium font-heading text-forest-950">
               Sign in to GamlaWala
             </h1>
             <p className="text-xs text-forest-900/70 mt-1 max-w-sm mx-auto">
-              Sign in with your Google account to reserve nursery inventory, track orders, and complete botanical express checkout.
+              Sign in with Google to place orders, track deliveries and save your favourite plants.
             </p>
           </div>
         </div>
@@ -53,15 +53,15 @@ function LoginContent() {
         <div className="bg-cream-50 border border-forest-800/10 rounded-2xl p-4 text-left space-y-2.5 text-xs text-forest-900/80">
           <div className="flex items-center gap-2 text-forest-900 font-semibold">
             <Sparkles className="w-4 h-4 text-sage-600 flex-shrink-0" />
-            <span>Express Botanical Checkout</span>
+            <span>Fast, one-tap checkout</span>
           </div>
           <div className="flex items-center gap-2 text-forest-900 font-semibold">
             <Truck className="w-4 h-4 text-forest-700 flex-shrink-0" />
-            <span>Real-time Live Nursery Tracking (Delhi &amp; Bengaluru)</span>
+            <span>Order updates on WhatsApp</span>
           </div>
           <div className="flex items-center gap-2 text-forest-900 font-semibold">
             <Leaf className="w-4 h-4 text-sage-600 flex-shrink-0" />
-            <span>Automated Plant Watering Reminders</span>
+            <span>Plant care reminders</span>
           </div>
         </div>
 
@@ -69,6 +69,8 @@ function LoginContent() {
         <div className="space-y-3 pt-2">
           <GoogleSignInButton variant="checkout" redirectPath={next} />
 
+          {process.env.NODE_ENV !== 'production' && (
+            <>
           <div className="relative py-1">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-forest-800/10"></div>
@@ -95,6 +97,9 @@ function LoginContent() {
             <Leaf className="w-4 h-4 text-sage-600" />
             <span>1-Click Test Plant Parent Login (Vikash)</span>
           </button>
+
+            </>
+          )}
 
           <p className="text-[11px] text-forest-900/60 pt-1">
             By signing in, you agree to GamlaWala&apos;s Terms of Service and Privacy Policy.

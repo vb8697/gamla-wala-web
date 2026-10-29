@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/client';
 import { PincodeInfo, Coupon, PlantHold } from '@/types/database';
+import { SITE, findServiceArea } from '@/config/site';
 
 export interface PricingBreakdown {
   subtotalPaise: number;
@@ -16,7 +17,7 @@ export interface PricingBreakdown {
 /**
  * 1. Pricing Quote Calculation
  * - Subtotal in paise
- * - Free shipping on orders >= ₹499 (49900 paise); otherwise ₹70 (7000 paise)
+ * - Free shipping on orders >= ₹499 (49900 paise); otherwise the flat local delivery fee (see config/site.ts)
  * - 5% Botanical GST on taxable amount
  */
 export function calculateBotanicalPricing(
@@ -39,8 +40,8 @@ export function calculateBotanicalPricing(
   }
 
   const taxablePaise = Math.max(0, subtotalPaise - discountPaise);
-  const isFreeShipping = taxablePaise >= 49900;
-  const shippingPaise = isFreeShipping ? 0 : 7000; // ₹70 standard delivery
+  const isFreeShipping = taxablePaise >= SITE.freeDeliveryAbovePaise;
+  const shippingPaise = isFreeShipping ? 0 : SITE.deliveryFeePaise;
   const taxPaise = Math.round(taxablePaise * 0.05); // 5% GST on botanical items
   const totalPaise = taxablePaise + shippingPaise + taxPaise;
 
@@ -141,37 +142,27 @@ export async function checkPincodeMatrix(
   pincode: string
 ): Promise<{ serviceable: boolean; info?: PincodeInfo; message?: string }> {
   if (!/^[1-9][0-9]{5}$/.test(pincode)) {
-    return { serviceable: false, message: 'Please enter a valid 6-digit Indian PIN code' };
+    return { serviceable: false, message: 'Please enter a valid 6-digit PIN code' };
   }
 
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from('pincodes')
-    .select('*')
-    .eq('pincode', pincode)
-    .single();
-
-  if (!error && data && data.is_serviceable) {
+  const area = findServiceArea(pincode);
+  if (!area) {
     return {
-      serviceable: true,
-      info: data as unknown as PincodeInfo,
+      serviceable: false,
+      message: `We currently deliver only in ${SITE.city}. We're opening more cities soon — message us on WhatsApp to be notified.`,
     };
   }
-
-  // Fallback intelligent logistics routing based on Indian postal regions
-  const isDelhiNCR = /^(11|12|20)/.test(pincode);
-  const isMetro = /^(40|56|70|60|50|38)/.test(pincode);
 
   return {
     serviceable: true,
     info: {
       pincode,
-      city: isDelhiNCR ? 'Delhi NCR' : isMetro ? 'Metro City' : 'Rest of India',
-      state: isDelhiNCR ? 'Delhi' : 'India',
+      city: area.city,
+      state: area.state,
       is_serviceable: true,
-      estimated_delivery_hours: isDelhiNCR ? 12 : isMetro ? 24 : 48,
-      express_available: isDelhiNCR,
-      cod_available: true,
+      estimated_delivery_hours: area.deliveryHours,
+      express_available: false,
+      cod_available: area.codAvailable,
     },
   };
 }
@@ -183,7 +174,7 @@ export async function createBotanicalHold(
   items: Array<{ variantId: string; storeId?: string; quantity: number }>
 ): Promise<{ success: boolean; hold?: PlantHold; error?: string }> {
   const supabase = createClient();
-  const defaultStoreId = 'a1000000-0000-0000-0000-000000000001'; // Connaught Place Nursery
+  const defaultStoreId = 'a1000000-0000-0000-0000-000000000001'; // primary nursery
 
   try {
     const payloadItems = items.map((item) => ({

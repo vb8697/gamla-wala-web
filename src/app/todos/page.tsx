@@ -1,7 +1,9 @@
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
+import { notFound } from 'next/navigation';
 
 export default async function Page() {
+  if (process.env.NODE_ENV === 'production') notFound(); // dev-only Supabase test page
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
@@ -10,7 +12,7 @@ export default async function Page() {
   return (
     <div className="max-w-2xl mx-auto py-12 px-4">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold font-heading text-forest-950">
+        <h1 className="text-2xl font-medium font-heading text-forest-950">
           Supabase Quickstart Test
         </h1>
         <p className="text-sm text-forest-800/70">

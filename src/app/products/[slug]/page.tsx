@@ -1,6 +1,7 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
-import { getProductBySlug } from '@/features/products/get-products';
+import { getProductBySlug, getProducts } from '@/features/products/get-products';
+import { productTypeOf } from '@/config/catalog';
 import { ProductDetailClient } from './product-detail-client';
 
 export default async function ProductDetailPage({
@@ -15,5 +16,13 @@ export default async function ProductDetailPage({
     notFound();
   }
 
-  return <ProductDetailClient product={product} />;
+  // Plants and pots are separate products: suggest pots on a plant page.
+  const pairedPots =
+    productTypeOf(product.categories?.slug) === 'plants'
+      ? (await getProducts())
+          .filter((p) => productTypeOf(p.categories?.slug) === 'pots')
+          .slice(0, 3)
+      : [];
+
+  return <ProductDetailClient product={product} pairedPots={pairedPots} />;
 }

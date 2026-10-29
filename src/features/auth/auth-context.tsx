@@ -23,6 +23,7 @@ interface AuthContextType {
   signInWithGoogle: (redirectPath?: string) => Promise<{ success: boolean; error?: string }>;
   signInDemoUser: (details?: { email?: string; name?: string; phone?: string }) => void;
   signOut: () => Promise<void>;
+  updateProfile: (updates: { fullName?: string; phone?: string; avatarUrl?: string }) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,13 +41,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const extractProfile = useCallback((u: User | null): PlantParentProfile | null => {
     if (!u) return null;
+    let cached: Partial<PlantParentProfile> = {};
+    if (typeof window !== 'undefined') {
+      try {
+        const item = localStorage.getItem(`gamlawala_profile_${u.id}`);
+        if (item) cached = JSON.parse(item);
+      } catch {}
+    }
     const meta = u.user_metadata || {};
     return {
       id: u.id,
       email: u.email || 'plantparent@gamlawala.in',
-      fullName: meta.full_name || meta.name || u.email?.split('@')[0] || 'Plant Parent',
-      avatarUrl: meta.avatar_url || meta.picture,
-      phone: meta.phone || u.phone,
+      fullName: cached.fullName || meta.full_name || meta.name || u.email?.split('@')[0] || 'Plant Parent',
+      avatarUrl: cached.avatarUrl || meta.avatar_url || meta.picture,
+      phone: cached.phone || meta.phone || u.phone,
       isDemo: false,
     };
   }, []);
@@ -207,6 +215,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   };
 
+  const updateProfile = async (updates: { fullName?: string; phone?: string; avatarUrl?: string }) => {
+    try {
+      if (!profile) throw new Error('Not signed in');
+
+      const updated: PlantParentProfile = {
+        ...profile,
+        ...(updates.fullName !== undefined ? { fullName: updates.fullName.trim() } : {}),
+        ...(updates.phone !== undefined ? { phone: updates.phone.trim() } : {}),
+        ...(updates.avatarUrl !== undefined ? { avatarUrl: updates.avatarUrl } : {}),
+      };
+
+      setProfile(updated);
+
+      if (profile.isDemo) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(DEMO_USER_STORAGE_KEY, JSON.stringify(updated));
+        }
+      } else {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(`gamlawala_profile_${profile.id}`, JSON.stringify(updated));
+        }
+
+        try {
+          await supabase.auth.updateUser({
+            data: {
+              full_name: updated.fullName,
+              phone: updated.phone,
+              avatar_url: updated.avatarUrl,
+            },
+          });
+        } catch (e) {
+          console.warn('Could not update Supabase auth metadata:', e);
+        }
+
+        try {
+          await supabase.from('profiles').upsert({
+            id: profile.id,
+            full_name: updated.fullName,
+            phone: updated.phone,
+            updated_at: new Date().toISOString(),
+          });
+        } catch (e) {
+          console.warn('Could not update Supabase profiles table:', e);
+        }
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      const msg = err?.message || 'Failed to update profile';
+      return { success: false, error: msg };
+    }
+  };
+
   const clearError = () => setError(null);
 
   return (
@@ -221,6 +282,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signInWithGoogle,
         signInDemoUser,
         signOut,
+        updateProfile,
       }}
     >
       {children}

@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/features/cart/cart-context';
 import { useAuth } from '@/features/auth/auth-context';
 import { GoogleSignInButton } from '@/components/GoogleSignInButton';
-import { formatPaise, PincodeInfo } from '@/types/database';
+import { formatPaise, PincodeInfo, UserAddress } from '@/types/database';
+import { SITE } from '@/config/site';
 import { checkPincodeMatrix, executeOrderTransaction } from '@/lib/api/botanical-api';
+import { fetchUserAddresses, saveUserAddress } from '@/features/profile/address-api';
 import {
   ShoppingBag,
   Trash2,
@@ -53,15 +55,16 @@ export default function CartAndCheckoutPage() {
     phone: '',
     line1: '',
     line2: '',
-    city: 'New Delhi',
-    state: 'Delhi',
-    postal_code: '110001',
+    city: SITE.city,
+    state: SITE.state,
+    postal_code: '',
     customer_note: '',
-    paymentMethod: 'razorpay',
+    paymentMethod: 'cod',
   });
 
   const [pincodeInfo, setPincodeInfo] = useState<PincodeInfo | null>(null);
   const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [pincodeError, setPincodeError] = useState<string | null>(null);
   const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState<string | null>(null);
   const [orderResult, setOrderResult] = useState<{
@@ -71,6 +74,9 @@ export default function CartAndCheckoutPage() {
     shippingAddress: typeof formData;
   } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState<UserAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [saveAddressToProfile, setSaveAddressToProfile] = useState(false);
 
   // Auto-acquire hold when entering checkout if not active
   useEffect(() => {
@@ -79,16 +85,48 @@ export default function CartAndCheckoutPage() {
     }
   }, [items.length, isHoldingStock, acquireHold]);
 
-  // Auto-fill from profile when authenticated
+  // Load saved delivery addresses and auto-fill default
   useEffect(() => {
     if (profile) {
-      setFormData((prev) => ({
-        ...prev,
-        recipient_name: prev.recipient_name || profile.fullName,
-        phone: prev.phone || profile.phone || '',
-      }));
+      fetchUserAddresses(profile.id, profile.isDemo).then((addrs) => {
+        setSavedAddresses(addrs);
+        const defaultAddr = addrs.find((a) => a.is_default) || addrs[0];
+        if (defaultAddr) {
+          setSelectedAddressId(defaultAddr.id);
+          setFormData((prev) => ({
+            ...prev,
+            recipient_name: defaultAddr.recipient_name,
+            phone: defaultAddr.phone,
+            line1: defaultAddr.line1,
+            line2: defaultAddr.line2 || '',
+            city: defaultAddr.city,
+            state: defaultAddr.state,
+            postal_code: defaultAddr.postal_code,
+          }));
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            recipient_name: prev.recipient_name || profile.fullName,
+            phone: prev.phone || profile.phone || '',
+          }));
+        }
+      });
     }
   }, [profile]);
+
+  const handleSelectAddress = (addr: UserAddress) => {
+    setSelectedAddressId(addr.id);
+    setFormData((prev) => ({
+      ...prev,
+      recipient_name: addr.recipient_name,
+      phone: addr.phone,
+      line1: addr.line1,
+      line2: addr.line2 || '',
+      city: addr.city,
+      state: addr.state,
+      postal_code: addr.postal_code,
+    }));
+  };
 
   // Check initial PIN code
   useEffect(() => {
@@ -98,13 +136,20 @@ export default function CartAndCheckoutPage() {
         setPincodeLoading(false);
         if (res.serviceable && res.info) {
           setPincodeInfo(res.info);
+          setPincodeError(null);
           setFormData((prev) => ({
             ...prev,
             city: res.info?.city || prev.city,
             state: res.info?.state || prev.state,
           }));
+        } else {
+          setPincodeInfo(null);
+          setPincodeError(res.message || 'We do not deliver to this PIN code yet.');
         }
       });
+    } else {
+      setPincodeInfo(null);
+      setPincodeError(null);
     }
   }, [formData.postal_code]);
 
@@ -141,6 +186,11 @@ export default function CartAndCheckoutPage() {
       return;
     }
 
+    if (!pincodeInfo) {
+      alert(pincodeError || `Please enter a valid ${SITE.city} PIN code.`);
+      return;
+    }
+
     setSubmitting(true);
     const result = await executeOrderTransaction({
       userId: profile?.id,
@@ -165,6 +215,22 @@ export default function CartAndCheckoutPage() {
     setSubmitting(false);
 
     if (result.success && result.orderNumber) {
+      if (saveAddressToProfile && profile) {
+        saveUserAddress(
+          profile.id,
+          {
+            recipient_name: formData.recipient_name,
+            phone: formData.phone,
+            line1: formData.line1,
+            line2: formData.line2 || null,
+            city: formData.city,
+            state: formData.state,
+            postal_code: formData.postal_code,
+          },
+          profile.isDemo
+        ).catch((e) => console.warn('Could not save address to profile:', e));
+      }
+
       setOrderResult({
         orderNumber: result.orderNumber,
         orderId: result.orderId,
@@ -189,10 +255,10 @@ export default function CartAndCheckoutPage() {
         </div>
 
         <div>
-          <span className="text-xs font-bold uppercase tracking-widest text-forest-600 block mb-1">
+          <span className="eyebrow block mb-2">
             Har Ghar Hariyali 🌱
           </span>
-          <h1 className="text-3xl font-extrabold font-heading text-forest-950">
+          <h1 className="text-3xl font-medium font-heading text-forest-950">
             Order Placed Successfully!
           </h1>
           <p className="text-base text-forest-900/80 mt-1">
@@ -203,15 +269,15 @@ export default function CartAndCheckoutPage() {
         {/* Invoice Summary Card */}
         <div className="bg-white rounded-2xl border border-forest-800/15 p-6 text-left shadow-lg space-y-4 max-w-lg mx-auto">
           <div className="flex items-center justify-between border-b border-forest-800/10 pb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-forest-800">
+            <span className="text-sm font-bold uppercase tracking-wider text-forest-800">
               Botanical Tax Invoice
             </span>
-            <span className="text-xs font-bold text-sage-600 bg-sage-50 border border-sage-200 px-2.5 py-0.5 rounded-full">
+            <span className="text-sm font-bold text-sage-600 bg-sage-50 border border-sage-200 px-2.5 py-0.5 rounded-full">
               Status: Confirmed
             </span>
           </div>
 
-          <div className="text-xs space-y-2 text-forest-900/80">
+          <div className="text-sm space-y-2 text-forest-900/80">
             <div className="flex justify-between">
               <span>Delivery To:</span>
               <strong className="text-forest-950">{orderResult.shippingAddress.recipient_name}</strong>
@@ -228,11 +294,11 @@ export default function CartAndCheckoutPage() {
             </div>
             <div className="flex justify-between">
               <span>Fulfillment Hub:</span>
-              <span className="text-forest-900 font-semibold">Connaught Place Nursery Hub, New Delhi</span>
+              <span className="text-forest-900 font-semibold">{SITE.city} Nursery</span>
             </div>
             <div className="flex justify-between">
               <span>Logistics Partner:</span>
-              <span className="text-forest-900 font-semibold">GamlaWala Express Care</span>
+              <span className="text-forest-900 font-semibold">GamlaWala local delivery</span>
             </div>
             <div className="flex justify-between pt-2 border-t border-forest-800/10 font-bold text-sm text-forest-950">
               <span>Total Paid (5% GST Incl.):</span>
@@ -242,7 +308,7 @@ export default function CartAndCheckoutPage() {
         </div>
 
         {/* Next Steps Guidance */}
-        <div className="bg-cream-100 rounded-2xl p-5 max-w-lg mx-auto text-xs text-forest-800/80 text-left space-y-2 border border-forest-800/10">
+        <div className="bg-cream-100 rounded-2xl p-5 max-w-lg mx-auto text-sm text-forest-800/80 text-left space-y-2 border border-forest-800/10">
           <h4 className="font-bold text-forest-950 flex items-center gap-1.5">
             <Leaf className="w-4 h-4 text-forest-700" /> What Happens Next?
           </h4>
@@ -260,13 +326,13 @@ export default function CartAndCheckoutPage() {
         <div className="pt-4 flex items-center justify-center gap-4">
           <Link
             href="/shop"
-            className="bg-forest-900 hover:bg-forest-800 text-cream-50 font-bold px-8 py-3.5 rounded-xl text-xs transition-colors shadow-md"
+            className="bg-forest-900 hover:bg-forest-800 text-cream-50 font-medium px-8 py-3.5 rounded-xl text-sm transition-colors shadow-md"
           >
-            Shop More Botanicals
+            Continue shopping
           </Link>
           <Link
             href="/plant-care"
-            className="bg-cream-100 hover:bg-cream-200 text-forest-900 font-semibold px-6 py-3.5 rounded-xl text-xs transition-colors border border-forest-800/10"
+            className="bg-cream-100 hover:bg-cream-200 text-forest-900 font-semibold px-6 py-3.5 rounded-xl text-sm transition-colors border border-forest-800/10"
           >
             View Plant Care Guides
           </Link>
@@ -282,17 +348,17 @@ export default function CartAndCheckoutPage() {
         <div className="w-16 h-16 bg-cream-100 rounded-full flex items-center justify-center text-forest-800/40 mx-auto mb-4">
           <ShoppingBag className="w-8 h-8" />
         </div>
-        <h1 className="text-2xl font-bold font-heading text-forest-950 mb-2">
-          Your botanical cart is empty
+        <h1 className="text-2xl font-medium font-heading text-forest-950 mb-2">
+          Your cart is empty
         </h1>
-        <p className="text-xs text-forest-900/70 mb-6">
-          Bring home oxygen-rich plants and handcrafted terracotta gamlas.
+        <p className="text-sm text-forest-900/70 mb-6">
+          Bring home fresh plants and handmade terracotta gamlas.
         </p>
         <Link
           href="/shop"
-          className="bg-forest-900 hover:bg-forest-800 text-cream-50 font-semibold px-6 py-3 rounded-xl text-xs transition-colors inline-block"
+          className="bg-forest-900 hover:bg-forest-800 text-cream-50 font-semibold px-6 py-3 rounded-xl text-sm transition-colors inline-block"
         >
-          Browse Botanical Catalog
+          Browse the shop
         </Link>
       </div>
     );
@@ -302,15 +368,15 @@ export default function CartAndCheckoutPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
       {/* 15-Minute Botanical Hold Banner */}
       {isHoldingStock && (
-        <div className="mb-6 bg-amber-50 border border-amber-300 rounded-2xl p-4 flex items-center justify-between text-amber-950 text-xs shadow-sm">
+        <div className="mb-6 bg-amber-50 border border-amber-300 rounded-2xl p-4 flex items-center justify-between text-amber-950 text-sm shadow-sm">
           <div className="flex items-center gap-3">
             <Clock className="w-5 h-5 text-amber-700 animate-pulse flex-shrink-0" />
             <div>
               <span className="font-bold block">
-                Nursery Stock Exclusively Reserved for You
+                We are holding your plants
               </span>
               <span className="text-[11px] text-amber-800/80">
-                15-Minute live inventory lock active. Stock will not be given to another buyer while timer runs.
+                Complete your order before the timer ends.
               </span>
             </div>
           </div>
@@ -320,18 +386,24 @@ export default function CartAndCheckoutPage() {
         </div>
       )}
 
-      <h1 className="text-3xl font-extrabold font-heading text-forest-950 mb-8">
-        Review Cart &amp; Checkout
-      </h1>
+      <div className="mb-8">
+        <span className="eyebrow block mb-2">Checkout</span>
+        <h1 className="text-4xl font-medium font-heading text-forest-950">Your cart</h1>
+        <ol className="flex items-center gap-2 mt-4 text-sm text-forest-900/60">
+          <li className="font-semibold text-forest-900">1 Review</li><li>›</li>
+          <li className="font-semibold text-forest-900">2 Delivery</li><li>›</li>
+          <li>3 Payment</li>
+        </ol>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         {/* Left Column: Items & Delivery Form */}
         <div className="lg:col-span-7 space-y-8">
           {/* Selected Items */}
-          <div className="bg-white rounded-2xl border border-forest-800/10 p-6 space-y-4 shadow-sm">
+          <div className="bg-white rounded-3xl border border-forest-900/5 shadow-sm p-6 space-y-4 shadow-sm">
             <h2 className="font-heading font-bold text-base text-forest-950 border-b border-forest-800/10 pb-3 flex items-center justify-between">
-              <span>Selected Botanicals ({items.length})</span>
-              <span className="text-xs text-sage-600 font-semibold">Har Ghar Hariyali</span>
+              <span>Items ({items.length})</span>
+              <span className="text-sm text-forest-900/50 font-normal">Free delivery above ₹499</span>
             </h2>
 
             <div className="divide-y divide-forest-800/10">
@@ -350,11 +422,11 @@ export default function CartAndCheckoutPage() {
                     <h3 className="font-heading font-bold text-sm text-forest-950 truncate">
                       {item.product.name}
                     </h3>
-                    <p className="text-xs text-sage-600 font-medium">
+                    <p className="text-sm text-sage-600 font-medium">
                       {item.variant.variant_name}
                       {item.variant.pot_size ? ` (${item.variant.pot_size})` : ''}
                     </p>
-                    <span className="text-xs font-bold text-forest-900 mt-1 block">
+                    <span className="text-sm font-bold text-forest-900 mt-1 block">
                       {formatPaise(item.variant.price_paise)}
                     </span>
                   </div>
@@ -366,7 +438,7 @@ export default function CartAndCheckoutPage() {
                     >
                       <Minus className="w-3 h-3" />
                     </button>
-                    <span className="px-2 text-xs font-bold text-forest-950">{item.quantity}</span>
+                    <span className="px-2 text-sm font-bold text-forest-950">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.id, 1)}
                       className="p-1 hover:bg-cream-200 text-forest-900"
@@ -408,14 +480,14 @@ export default function CartAndCheckoutPage() {
                       {profile.fullName}
                     </span>
                     <span className="text-[10px] bg-sage-100 text-forest-800 font-bold px-2 py-0.5 rounded-full border border-sage-200 inline-flex items-center gap-1">
-                      <Leaf className="w-2.5 h-2.5 text-sage-600" /> Verified Plant Parent
+                      <Leaf className="w-2.5 h-2.5 text-sage-600" /> Signed in
                     </span>
                   </div>
-                  <p className="text-xs text-forest-700/80">{profile.email}</p>
+                  <p className="text-sm text-forest-700/80">{profile.email}</p>
                 </div>
               </div>
-              <span className="text-xs font-semibold text-sage-700 bg-white px-3 py-1 rounded-full border border-forest-200 shadow-2xs hidden sm:inline">
-                Express Checkout Active ✅
+              <span className="text-sm font-semibold text-sage-700 bg-white px-3 py-1 rounded-full border border-forest-200 shadow-2xs hidden sm:inline">
+                Ready to order
               </span>
             </div>
           ) : (
@@ -423,21 +495,23 @@ export default function CartAndCheckoutPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="inline-flex items-center gap-1.5 text-sage-300 text-[11px] font-bold uppercase tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5 text-sage-300 animate-pulse" /> Express Plant Checkout
+                    <Sparkles className="w-3.5 h-3.5 text-sage-300 animate-pulse" /> Quick checkout
                   </div>
-                  <h3 className="font-heading font-extrabold text-base text-white">
+                  <h3 className="font-heading font-medium text-base text-white">
                     Sign in with Google
                   </h3>
-                  <p className="text-xs text-cream-200/80 max-w-md">
-                    Auto-fills your delivery address, links this order to your plant account, and unlocks express watering reminder schedules.
+                  <p className="text-sm text-cream-200/80 max-w-md">
+                    Fills in your details and lets you track this order.
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => signInDemoUser()}
-                    className="text-[11px] text-sage-300 hover:text-white underline font-medium block pt-1"
-                  >
-                    ⚡ Or 1-Click Test Plant Parent Login (Vikash) →
-                  </button>
+                  {process.env.NODE_ENV !== 'production' && (
+                    <button
+                      type="button"
+                      onClick={() => signInDemoUser()}
+                      className="text-[11px] text-sage-300 hover:text-white underline font-medium block pt-1"
+                    >
+                      Dev only: test login →
+                    </button>
+                  )}
                 </div>
                 <div className="flex-shrink-0 w-full sm:w-auto">
                   <GoogleSignInButton variant="checkout" redirectPath="/cart" />
@@ -447,10 +521,10 @@ export default function CartAndCheckoutPage() {
           )}
 
           {/* Delivery Address Form */}
-          <form id="checkout-form" onSubmit={handleSubmit} className="bg-white rounded-2xl border border-forest-800/10 p-6 space-y-4 shadow-sm">
+          <form id="checkout-form" onSubmit={handleSubmit} className="bg-white rounded-3xl border border-forest-900/5 shadow-sm p-6 space-y-4 shadow-sm">
             <h2 className="font-heading font-bold text-base text-forest-950 border-b border-forest-800/10 pb-3 flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <Truck className="w-4 h-4 text-forest-700" /> Delivery Address in India
+                <Truck className="w-4 h-4 text-forest-700" /> Delivery address
               </span>
               {!profile && (
                 <span className="text-[11px] font-bold text-amber-800 bg-amber-100 border border-amber-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
@@ -460,23 +534,73 @@ export default function CartAndCheckoutPage() {
             </h2>
 
             {!profile && (
-              <div className="p-3 bg-amber-50/80 border border-amber-200 text-amber-950 text-xs rounded-xl flex items-center justify-between gap-3">
+              <div className="p-3 bg-amber-50/80 border border-amber-200 text-amber-950 text-sm rounded-xl flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-amber-700 flex-shrink-0" />
                   <span>You must sign in with Google to place this order and unlock 100% transit-safe delivery.</span>
                 </div>
                 <Link
                   href="/login?next=/cart"
-                  className="font-bold text-xs underline text-amber-900 hover:text-black flex-shrink-0"
+                  className="font-bold text-sm underline text-amber-900 hover:text-black flex-shrink-0"
                 >
                   Sign In Now →
                 </Link>
               </div>
             )}
 
+            {/* Saved Addresses Quick Picker */}
+            {profile && savedAddresses.length > 0 && (
+              <div className="space-y-2 pb-1 border-b border-forest-800/10">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-forest-900 uppercase tracking-wider">
+                    Select a Saved Delivery Address
+                  </span>
+                  <Link
+                    href="/profile?tab=addresses"
+                    className="text-forest-800 hover:text-forest-950 font-semibold underline flex items-center gap-1"
+                  >
+                    <span>Manage</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {savedAddresses.map((addr) => {
+                    const selected = selectedAddressId === addr.id;
+                    return (
+                      <button
+                        key={addr.id}
+                        type="button"
+                        onClick={() => handleSelectAddress(addr)}
+                        className={`text-left p-3 rounded-2xl border transition-all text-xs ${
+                          selected
+                            ? 'border-forest-900 bg-forest-900/5 ring-1 ring-forest-900'
+                            : 'border-forest-800/15 bg-white hover:border-forest-700'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <span className="font-bold text-forest-950 capitalize">
+                            {addr.address_type || 'Address'} · {addr.recipient_name}
+                          </span>
+                          {addr.is_default && (
+                            <span className="text-[10px] bg-sage-200 text-forest-950 px-1.5 py-0.2 rounded font-bold">
+                              Default
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-forest-900/70 truncate">{addr.line1}</p>
+                        <p className="text-forest-900/60 font-mono text-[11px] mt-0.5">
+                          {addr.city} · {addr.postal_code}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-forest-900 block mb-1">
+                <label className="text-sm font-semibold text-forest-900 block mb-1">
                   Recipient Full Name *
                 </label>
                 <input
@@ -485,27 +609,27 @@ export default function CartAndCheckoutPage() {
                   placeholder="e.g. Rahul Sharma"
                   value={formData.recipient_name}
                   onChange={(e) => setFormData({ ...formData, recipient_name: e.target.value })}
-                  className="w-full text-xs bg-cream-50 border border-forest-800/15 rounded-xl px-3.5 py-2.5 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800"
+                  className="w-full text-sm bg-cream-50 border border-forest-800/15 rounded-xl px-3.5 py-2.5 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-forest-900 block mb-1">
+                <label className="text-sm font-semibold text-forest-900 block mb-1">
                   WhatsApp / Contact Phone *
                 </label>
                 <input
                   type="tel"
                   required
-                  placeholder="+91 98765 43210"
+                  placeholder="98765 43210"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full text-xs bg-cream-50 border border-forest-800/15 rounded-xl px-3.5 py-2.5 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800"
+                  className="w-full text-sm bg-cream-50 border border-forest-800/15 rounded-xl px-3.5 py-2.5 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-forest-900 block mb-1">
+              <label className="text-sm font-semibold text-forest-900 block mb-1">
                 House No., Apartment, Street Address *
               </label>
               <input
@@ -514,13 +638,13 @@ export default function CartAndCheckoutPage() {
                 placeholder="Flat 402, Green Valley Apartments"
                 value={formData.line1}
                 onChange={(e) => setFormData({ ...formData, line1: e.target.value })}
-                className="w-full text-xs bg-cream-50 border border-forest-800/15 rounded-xl px-3.5 py-2.5 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800"
+                className="w-full text-sm bg-cream-50 border border-forest-800/15 rounded-xl px-3.5 py-2.5 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="text-xs font-semibold text-forest-900 block mb-1">
+                <label className="text-sm font-semibold text-forest-900 block mb-1">
                   6-Digit PIN Code *
                 </label>
                 <input
@@ -530,12 +654,12 @@ export default function CartAndCheckoutPage() {
                   placeholder="110001"
                   value={formData.postal_code}
                   onChange={(e) => handlePincodeChange(e.target.value)}
-                  className="w-full text-xs bg-cream-50 border border-forest-800/15 rounded-xl px-3.5 py-2.5 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800"
+                  className="w-full text-sm bg-cream-50 border border-forest-800/15 rounded-xl px-3.5 py-2.5 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-forest-900 block mb-1">
+                <label className="text-sm font-semibold text-forest-900 block mb-1">
                   City
                 </label>
                 <input
@@ -543,12 +667,12 @@ export default function CartAndCheckoutPage() {
                   required
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="w-full text-xs bg-cream-50 border border-forest-800/15 rounded-xl px-3.5 py-2.5 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800"
+                  className="w-full text-sm bg-cream-50 border border-forest-800/15 rounded-xl px-3.5 py-2.5 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-forest-900 block mb-1">
+                <label className="text-sm font-semibold text-forest-900 block mb-1">
                   State
                 </label>
                 <input
@@ -556,26 +680,46 @@ export default function CartAndCheckoutPage() {
                   required
                   value={formData.state}
                   onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="w-full text-xs bg-cream-50 border border-forest-800/15 rounded-xl px-3.5 py-2.5 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800"
+                  className="w-full text-sm bg-cream-50 border border-forest-800/15 rounded-xl px-3.5 py-2.5 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800"
                 />
               </div>
             </div>
 
+            {pincodeError && (
+              <div className="bg-terracotta-50 border border-terracotta-100 rounded-xl p-3 text-sm text-terracotta-700">
+                {pincodeError}
+              </div>
+            )}
+
             {/* PIN Code Verification Indicator */}
             {pincodeInfo && (
-              <div className="bg-sage-50 border border-sage-200 rounded-xl p-3 text-xs text-forest-900 flex items-center justify-between">
+              <div className="bg-sage-50 border border-sage-200 rounded-xl p-3 text-sm text-forest-900 flex items-center justify-between">
                 <span className="flex items-center gap-1.5 font-medium">
                   <Check className="w-3.5 h-3.5 text-sage-600" />
-                  <span>Express Logistics Serviceable in {pincodeInfo.city} ({pincodeInfo.pincode})</span>
+                  <span>We deliver to {pincodeInfo.city} ({pincodeInfo.pincode})</span>
                 </span>
                 <span className="text-[11px] font-bold text-sage-700">
-                  {pincodeInfo.estimated_delivery_hours}h Transit
+                  Within {pincodeInfo.estimated_delivery_hours}h
                 </span>
               </div>
             )}
 
+            {profile && (
+              <div className="pt-1">
+                <label className="inline-flex items-center gap-2 cursor-pointer select-none text-xs text-forest-900 font-medium">
+                  <input
+                    type="checkbox"
+                    checked={saveAddressToProfile}
+                    onChange={(e) => setSaveAddressToProfile(e.target.checked)}
+                    className="w-4 h-4 rounded text-forest-900 focus:ring-forest-800 border-forest-800/30"
+                  />
+                  <span>Save this delivery address to my profile</span>
+                </label>
+              </div>
+            )}
+
             <div>
-              <label className="text-xs font-semibold text-forest-900 block mb-1">
+              <label className="text-sm font-semibold text-forest-900 block mb-1">
                 Special Nursery Instructions (Optional)
               </label>
               <input
@@ -583,13 +727,13 @@ export default function CartAndCheckoutPage() {
                 placeholder="e.g. Please leave package with security guard"
                 value={formData.customer_note}
                 onChange={(e) => setFormData({ ...formData, customer_note: e.target.value })}
-                className="w-full text-xs bg-cream-50 border border-forest-800/15 rounded-xl px-3.5 py-2 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800"
+                className="w-full text-sm bg-cream-50 border border-forest-800/15 rounded-xl px-3.5 py-2 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800"
               />
             </div>
 
             {/* Payment Method Selector */}
             <div className="pt-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-forest-800 block mb-2">
+              <label className="text-sm font-bold uppercase tracking-wider text-forest-800 block mb-2">
                 Payment Option
               </label>
               <div className="grid grid-cols-2 gap-3">
@@ -603,9 +747,9 @@ export default function CartAndCheckoutPage() {
                   }`}
                 >
                   <CreditCard className="w-4 h-4 mb-1" />
-                  <div className="text-xs font-bold">Online Payment (UPI, Cards, NetBanking)</div>
+                  <div className="text-sm font-bold">Pay online (UPI, card)</div>
                   <div className={`text-[10px] ${formData.paymentMethod === 'razorpay' ? 'text-sage-200' : 'text-forest-700'}`}>
-                    Powered by Razorpay India
+                    Pay now
                   </div>
                 </button>
 
@@ -619,7 +763,7 @@ export default function CartAndCheckoutPage() {
                   }`}
                 >
                   <Banknote className="w-4 h-4 mb-1" />
-                  <div className="text-xs font-bold">Cash on Delivery (COD)</div>
+                  <div className="text-sm font-bold">Cash on Delivery (COD)</div>
                   <div className={`text-[10px] ${formData.paymentMethod === 'cod' ? 'text-sage-200' : 'text-forest-700'}`}>
                     Pay when plants arrive
                   </div>
@@ -631,14 +775,14 @@ export default function CartAndCheckoutPage() {
 
         {/* Right Column: Order Summary */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white rounded-2xl border border-forest-800/10 p-6 space-y-4 shadow-sm sticky top-24">
+          <div className="bg-white rounded-3xl border border-forest-900/5 shadow-sm p-6 space-y-4 shadow-sm sticky top-24">
             <h2 className="font-heading font-bold text-base text-forest-950 border-b border-forest-800/10 pb-3">
-              Order Pricing Summary
+              Order summary
             </h2>
 
             {/* Coupon Code Section */}
             {appliedCoupon ? (
-              <div className="flex items-center justify-between text-xs text-sage-700 bg-sage-50 px-3 py-2 rounded-xl border border-sage-200 font-medium">
+              <div className="flex items-center justify-between text-sm text-sage-700 bg-sage-50 px-3 py-2 rounded-xl border border-sage-200 font-medium">
                 <span className="flex items-center gap-1.5">
                   <Check className="w-3.5 h-3.5 text-sage-600" />
                   <span>Promo <strong>{appliedCoupon.code}</strong> Applied</span>
@@ -661,12 +805,12 @@ export default function CartAndCheckoutPage() {
                       placeholder="HARGHAR100, GREEN10"
                       value={couponInput}
                       onChange={(e) => setCouponInput(e.target.value)}
-                      className="w-full text-xs bg-cream-50 border border-forest-800/15 rounded-xl pl-8 pr-3 py-2 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800 uppercase"
+                      className="w-full text-sm bg-cream-50 border border-forest-800/15 rounded-xl pl-8 pr-3 py-2 text-forest-950 focus:outline-none focus:ring-1 focus:ring-forest-800 uppercase"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="bg-forest-800 hover:bg-forest-900 text-cream-50 text-xs font-semibold px-4 py-2 rounded-xl transition-colors"
+                    className="bg-forest-800 hover:bg-forest-900 text-cream-50 text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
                   >
                     Apply
                   </button>
@@ -678,9 +822,9 @@ export default function CartAndCheckoutPage() {
             )}
 
             {/* Price Lines */}
-            <div className="space-y-2 text-xs text-forest-900/80 pt-2">
+            <div className="space-y-2 text-sm text-forest-900/80 pt-2">
               <div className="flex justify-between">
-                <span>Botanical Subtotal</span>
+                <span>Subtotal</span>
                 <span className="font-semibold text-forest-950">{formatPaise(pricing.subtotalPaise)}</span>
               </div>
 
@@ -692,12 +836,12 @@ export default function CartAndCheckoutPage() {
               )}
 
               <div className="flex justify-between">
-                <span>5% Botanical GST (Included)</span>
+                <span>GST (included)</span>
                 <span>{formatPaise(pricing.taxPaise)}</span>
               </div>
 
               <div className="flex justify-between">
-                <span>Transit-Safe Shipping</span>
+                <span>Delivery</span>
                 <span>
                   {pricing.isFreeShipping ? (
                     <strong className="text-sage-600">FREE</strong>
@@ -719,13 +863,13 @@ export default function CartAndCheckoutPage() {
                 type="submit"
                 form="checkout-form"
                 disabled={submitting}
-                className="w-full bg-forest-900 hover:bg-forest-800 text-cream-50 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg text-sm disabled:opacity-50"
+                className="w-full bg-forest-900 hover:bg-forest-800 text-cream-50 font-medium py-4 rounded-full flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg text-sm disabled:opacity-50"
               >
                 {submitting ? (
                   'Processing Order...'
                 ) : (
                   <>
-                    Confirm &amp; Place Order <ArrowRight className="w-4 h-4" />
+                    Place order <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
@@ -733,7 +877,7 @@ export default function CartAndCheckoutPage() {
               <div className="space-y-2">
                 <Link
                   href="/login?next=/cart"
-                  className="w-full bg-white hover:bg-cream-50 text-forest-950 border-2 border-forest-900 font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-md hover:shadow-lg text-sm group active:scale-[0.99]"
+                  className="w-full bg-white hover:bg-cream-50 text-forest-950 border-2 border-forest-900 font-bold py-4 rounded-full flex items-center justify-center gap-3 transition-all shadow-md hover:shadow-lg text-sm group active:scale-[0.99]"
                 >
                   <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
@@ -746,7 +890,7 @@ export default function CartAndCheckoutPage() {
                 </Link>
                 <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-[11px] font-medium flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-amber-700 flex-shrink-0" />
-                  <span>Sign in is required to reserve botanical inventory and confirm this order.</span>
+                  <span>Please sign in to confirm this order.</span>
                 </div>
               </div>
             )}
@@ -755,7 +899,7 @@ export default function CartAndCheckoutPage() {
             <div className="pt-2 border-t border-forest-800/10 space-y-2 text-[11px] text-forest-800/70">
               <div className="flex items-center gap-2">
                 <Truck className="w-3.5 h-3.5 text-forest-700" />
-                <span>Express nursery transit in protective cardboard guards</span>
+                <span>Delivered in 24h within {SITE.city}</span>
               </div>
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-3.5 h-3.5 text-forest-700" />

@@ -153,7 +153,7 @@ export function GoogleSignInButton({
                 <GoogleIcon />
               </div>
               <div>
-                <h3 className="font-heading font-extrabold text-forest-950 text-base">
+                <h3 className="font-heading font-medium text-forest-950 text-base">
                   Google Sign-In Connected 🌱
                 </h3>
                 <p className="text-xs text-forest-600 font-medium">

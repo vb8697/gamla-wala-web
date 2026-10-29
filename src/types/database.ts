@@ -98,6 +98,22 @@ export interface PlantHold {
   created_at?: string;
 }
 
+export interface UserAddress {
+  id: string;
+  user_id: string;
+  recipient_name: string;
+  phone: string;
+  line1: string;
+  line2?: string | null;
+  city: string;
+  state: string;
+  postal_code: string;
+  country_code: string;
+  address_type?: 'home' | 'work' | 'other';
+  is_default: boolean;
+  created_at?: string;
+}
+
 export interface Store {
   id: string;
   name: string;

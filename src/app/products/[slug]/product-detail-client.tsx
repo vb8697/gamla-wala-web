@@ -14,12 +14,13 @@ import {
   Check,
   ChevronRight,
   Sprout,
-  AlertCircle,
 } from 'lucide-react';
 
 import { PincodeChecker } from '@/components/PincodeChecker';
+import { SITE } from '@/config/site';
+import { productTypeOf } from '@/config/catalog';
 
-export function ProductDetailClient({ product }: { product: Product }) {
+export function ProductDetailClient({ product, pairedPots = [] }: { product: Product; pairedPots?: Product[] }) {
   const { addItem } = useCart();
   const variants = product.product_variants || [];
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
@@ -36,6 +37,8 @@ export function ProductDetailClient({ product }: { product: Product }) {
   const imageSrc =
     product.product_images?.[0]?.storage_path ||
     'https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=1000&q=80';
+
+  const isPlant = productTypeOf(product.categories?.slug) === 'plants';
 
   const handleAddToCart = () => {
     addItem(product, activeVariant, quantity);
@@ -86,7 +89,7 @@ export function ProductDetailClient({ product }: { product: Product }) {
               )}
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-extrabold font-heading text-forest-950 leading-tight">
+            <h1 className="text-3xl sm:text-4xl font-medium font-heading text-forest-950 leading-tight">
               {product.name}
             </h1>
             {product.botanical_name && (
@@ -98,7 +101,7 @@ export function ProductDetailClient({ product }: { product: Product }) {
 
           {/* Price Block */}
           <div className="bg-cream-100 p-5 rounded-2xl border border-forest-800/10 flex items-baseline gap-4">
-            <span className="text-3xl font-extrabold font-heading text-forest-950">
+            <span className="text-3xl font-medium font-heading text-forest-950">
               {formatPaise(activeVariant.price_paise)}
             </span>
             {activeVariant.compare_at_price_paise && (
@@ -107,7 +110,7 @@ export function ProductDetailClient({ product }: { product: Product }) {
               </span>
             )}
             <span className="text-xs text-sage-600 font-bold ml-auto bg-sage-100 px-2.5 py-1 rounded-md">
-              5% Botanical GST Included
+              Inclusive of GST
             </span>
           </div>
 
@@ -120,7 +123,7 @@ export function ProductDetailClient({ product }: { product: Product }) {
           {variants.length > 0 && (
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-forest-800 block">
-                Select Pot &amp; Planter Specification
+                Choose size
               </label>
               <div className="grid grid-cols-2 gap-3">
                 {variants.map((v, idx) => (
@@ -186,14 +189,56 @@ export function ProductDetailClient({ product }: { product: Product }) {
                 </>
               ) : (
                 <>
-                  <ShoppingBag className="w-4 h-4 text-sage-300" /> Add to Botanical Cart
+                  <ShoppingBag className="w-4 h-4 text-sage-300" /> Add to Cart
                 </>
               )}
             </button>
           </div>
 
+          {isPlant && (
+            <p className="text-sm text-forest-900/70 bg-cream-100 rounded-2xl px-4 py-3">
+              Delivered in a simple nursery pot. Decorative pots are sold separately.
+            </p>
+          )}
+
+          {isPlant && pairedPots.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="font-heading font-medium text-lg text-forest-950">Add a pot (optional)</h3>
+              <div className="space-y-2">
+                {pairedPots.map((pot) => {
+                  const v = pot.product_variants?.[0];
+                  if (!v) return null;
+                  return (
+                    <div key={pot.id} className="flex items-center gap-3 bg-white rounded-2xl border border-forest-900/5 shadow-sm p-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={pot.product_images?.[0]?.storage_path || ''}
+                        alt={pot.name}
+                        className="w-14 h-14 rounded-xl object-cover bg-cream-100"
+                      />
+                      <Link href={`/products/${pot.slug}`} className="flex-1 min-w-0">
+                        <span className="block text-sm font-medium text-forest-950 truncate">{pot.name}</span>
+                        <span className="text-xs text-forest-900/60">
+                          {v.variant_name} · {formatPaise(v.price_paise)}
+                        </span>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => addItem(pot, v, 1)}
+                        className="text-xs font-semibold border border-forest-900/25 hover:bg-forest-900 hover:text-cream-50 rounded-full px-4 py-2 transition-colors"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Plant Care Details Card */}
-          <div className="bg-white rounded-2xl border border-forest-800/10 p-5 space-y-4">
+          {isPlant && (
+          <div className="bg-white rounded-3xl border border-forest-900/5 shadow-sm p-5 space-y-4">
             <h3 className="font-heading font-bold text-sm text-forest-950 flex items-center gap-2">
               <Sprout className="w-4 h-4 text-forest-700" /> Plant Care Requirements
             </h3>
@@ -215,16 +260,17 @@ export function ProductDetailClient({ product }: { product: Product }) {
               </div>
             </div>
           </div>
+          )}
 
           {/* Shipping & Guarantee */}
           <div className="grid grid-cols-2 gap-3 text-xs text-forest-800/80 pt-2">
             <div className="flex items-center gap-2 bg-cream-100 p-3 rounded-xl border border-forest-800/10">
               <Truck className="w-4 h-4 text-forest-700" />
-              <span>Multi-layer protective transit packaging</span>
+              <span>Delivered fresh in {SITE.city} within 24h</span>
             </div>
             <div className="flex items-center gap-2 bg-cream-100 p-3 rounded-xl border border-forest-800/10">
               <ShieldCheck className="w-4 h-4 text-forest-700" />
-              <span>7-Day plant health replacement warranty</span>
+              <span>7-day replacement if it arrives unhealthy</span>
             </div>
           </div>
         </div>

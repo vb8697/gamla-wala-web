@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import { Truck, CheckCircle2, AlertCircle, MapPin, Loader2 } from 'lucide-react';
 import { checkPincodeMatrix } from '@/lib/api/botanical-api';
 import { PincodeInfo } from '@/types/database';
+import { SITE, whatsappLink } from '@/config/site';
 
-export function PincodeChecker({ defaultPincode = '110001' }: { defaultPincode?: string }) {
+export function PincodeChecker({ defaultPincode = SITE.defaultPincode }: { defaultPincode?: string }) {
   const [pincode, setPincode] = useState(defaultPincode);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PincodeInfo | null>(null);
@@ -27,7 +28,7 @@ export function PincodeChecker({ defaultPincode = '110001' }: { defaultPincode?:
     if (res.serviceable && res.info) {
       setResult(res.info);
     } else {
-      setError(res.message || 'Location currently unserviceable for live botanicals');
+      setError(res.message || 'Not serviceable yet');
       setResult(null);
     }
   };
@@ -37,10 +38,10 @@ export function PincodeChecker({ defaultPincode = '110001' }: { defaultPincode?:
       <div className="flex items-center justify-between text-xs font-semibold text-forest-950">
         <span className="flex items-center gap-1.5">
           <Truck className="w-4 h-4 text-forest-700" />
-          <span>Check Express Plant Delivery</span>
+          <span>Check delivery to your PIN</span>
         </span>
         <span className="text-[10px] text-sage-600 bg-sage-100 px-2 py-0.5 rounded-full font-bold">
-          Transit Safe 🌱
+          {SITE.city} only
         </span>
       </div>
 
@@ -59,7 +60,7 @@ export function PincodeChecker({ defaultPincode = '110001' }: { defaultPincode?:
         <button
           type="submit"
           disabled={loading}
-          className="bg-forest-900 hover:bg-forest-800 text-cream-50 font-bold text-xs px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-sm"
+          className="bg-forest-900 hover:bg-forest-800 text-cream-50 font-medium text-xs px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-sm"
         >
           {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Check'}
         </button>
@@ -68,7 +69,17 @@ export function PincodeChecker({ defaultPincode = '110001' }: { defaultPincode?:
       {error && (
         <div className="text-xs text-terracotta-600 flex items-center gap-1.5">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-          <span>{error}</span>
+          <span>
+            {error}{' '}
+            <a
+              href={whatsappLink(`Hi ${SITE.name}! Please notify me when you deliver to PIN ${pincode}.`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline font-semibold"
+            >
+              Notify me
+            </a>
+          </span>
         </div>
       )}
 
@@ -80,11 +91,11 @@ export function PincodeChecker({ defaultPincode = '110001' }: { defaultPincode?:
               <span>Serviceable: {result.city} ({result.pincode})</span>
             </span>
             <span className="text-[11px] font-bold text-sage-600">
-              {result.estimated_delivery_hours}h Delivery
+              Within {result.estimated_delivery_hours}h
             </span>
           </div>
           <p className="text-[11px] text-forest-800/70">
-            Fulfillment from <strong>Connaught Place Botanical Hub</strong> in breathable packaging.
+            Fulfillment from our {SITE.city} nursery in protective packaging.
             {result.cod_available ? ' COD available.' : ''}
           </p>
         </div>

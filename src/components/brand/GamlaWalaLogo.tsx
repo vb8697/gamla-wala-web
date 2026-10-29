@@ -228,7 +228,7 @@ export function GamlaWalaLogo({
         <div className="flex flex-col">
           <div className="flex items-center">
             <span
-              className={`font-bold font-heading tracking-tight text-white leading-none ${sizeMap.text}`}
+              className={`font-medium font-heading tracking-tight text-white leading-none ${sizeMap.text}`}
             >
               Gamla<span className="text-white">Wala</span>
             </span>
@@ -268,7 +268,7 @@ export function GamlaWalaLogo({
         <div className="flex flex-col">
           <div className="flex items-center">
             <span
-              className={`font-bold font-heading tracking-tight text-[#1B5E3B] leading-none ${sizeMap.text}`}
+              className={`font-medium font-heading tracking-tight text-[#1B5E3B] leading-none ${sizeMap.text}`}
             >
               GamlaWala
             </span>
@@ -307,7 +307,7 @@ export function GamlaWalaLogo({
         <div className="flex flex-col items-center">
           <div className="flex items-center">
             <span
-              className={`font-bold font-heading tracking-tight text-[#1B5E3B] leading-none ${sizeMap.text}`}
+              className={`font-medium font-heading tracking-tight text-[#1B5E3B] leading-none ${sizeMap.text}`}
             >
               Gamla<span className="text-[#0F3D28]">Wala</span>
             </span>
@@ -345,7 +345,7 @@ export function GamlaWalaLogo({
       <div className="flex flex-col">
         <div className="flex items-center">
           <span
-            className={`font-extrabold font-heading tracking-tight text-[#1B5E3B] leading-none ${sizeMap.text}`}
+            className={`font-medium font-heading tracking-tight text-[#1B5E3B] leading-none ${sizeMap.text}`}
           >
             Gamla<span className="text-[#0F3D28]">Wala</span>
           </span>

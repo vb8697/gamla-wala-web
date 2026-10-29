@@ -2,14 +2,14 @@ import React from 'react';
 import Link from 'next/link';
 import { getProducts } from '@/features/products/get-products';
 import { ProductCard } from '@/components/ProductCard';
-import { Leaf, Sparkles, ShieldCheck, HeartHandshake, ArrowRight, Sun, Droplet, Sprout } from 'lucide-react';
+import { Leaf, ShieldCheck, ArrowRight, Sun, Droplet, Sprout, MapPin, Truck, Wallet, PackageCheck } from 'lucide-react';
+import { SITE, PRIMARY_AREA } from '@/config/site';
 import {
   IndoorPlantsIcon,
   OutdoorPlantsIcon,
   PotsPlantersIcon,
   SeedsGardeningIcon,
 } from '@/components/brand/CategoryIcons';
-import { GamlaWalaSeal } from '@/components/brand/GamlaWalaLogo';
 
 export default async function HomePage() {
   const products = await getProducts();
@@ -19,188 +19,83 @@ export default async function HomePage() {
     {
       name: 'Indoor Air Purifiers',
       slug: 'indoor-plants',
-      count: '24+ Varieties',
       image: 'https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=600&q=80',
       description: 'Shade-tolerant greens for desks & bedrooms',
     },
     {
       name: 'Handmade Gamlas',
       slug: 'pots-planters',
-      count: '38+ Designs',
       image: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=600&q=80',
       description: 'Raw earthen terracotta & ceramic pots',
     },
     {
       name: 'Flowering & Balcony',
       slug: 'outdoor-plants',
-      count: '18+ Varieties',
       image: 'https://images.unsplash.com/photo-1598880940371-c756e015fea1?auto=format&fit=crop&w=600&q=80',
       description: 'Sun-loving blooms, Tulsi & Bougainvillea',
     },
     {
       name: 'Hardy Succulents',
       slug: 'succulents',
-      count: '15+ Varieties',
       image: 'https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=600&q=80',
       description: 'Thrive on minimal water & neglect',
     },
   ];
 
   return (
-    <div className="space-y-16 md:space-y-24 pb-20">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-forest-950 via-forest-900 to-forest-800 text-cream-50 pt-12 pb-20 md:py-28">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#52b788_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Left Content */}
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-forest-800/80 border border-sage-500/30 px-3.5 py-1.5 rounded-full text-xs font-semibold text-sage-300">
-                <Sparkles className="w-3.5 h-3.5 text-sage-400" />
-                <span>India&apos;s Trusted Botanical Nursery · Har Ghar Hariyali</span>
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-heading text-white tracking-tight leading-[1.15]">
-                Bring Living Calm into Every Indian Home.
+    <div className="space-y-20 md:space-y-28 pb-24">
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-cream-100">
+        <div className="absolute -top-32 -right-32 w-[520px] h-[520px] rounded-full bg-sage-200/50 blur-3xl pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-24 relative">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            <div className="lg:col-span-6 space-y-7 text-center lg:text-left">
+              <span className="inline-flex items-center gap-2 eyebrow">
+                <MapPin className="w-3.5 h-3.5" /> Now delivering in {SITE.city}, {SITE.state}
+              </span>
+              <h1 className="text-5xl sm:text-6xl xl:text-7xl font-medium leading-[1.05] text-forest-950">
+                Living green,
+                <br />
+                <em className="font-normal text-forest-700">delivered fresh.</em>
               </h1>
-
-              <p className="text-base sm:text-lg text-cream-200/80 max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
-                GamlaWala delivers nursery-grown, oxygen-rich indoor plants and handcrafted earthen planters safely to your doorstep. Free transit protection across 19,000+ PIN codes.
+              <p className="text-base sm:text-lg text-forest-900/70 max-w-md mx-auto lg:mx-0 leading-relaxed">
+                Hand-picked indoor plants and handmade terracotta gamlas from our {SITE.city} nursery, at your door within 24 hours.
               </p>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-                <Link
-                  href="/shop"
-                  className="w-full sm:w-auto bg-sage-500 hover:bg-sage-400 text-forest-950 font-bold px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 group text-sm"
-                >
-                  Explore Plant Collection
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-1">
+                <Link href="/shop" className="btn-primary w-full sm:w-auto group">
+                  Shop plants
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <Link
-                  href="/plant-care"
-                  className="w-full sm:w-auto bg-forest-900/60 hover:bg-forest-900 border border-forest-700 text-cream-100 font-semibold px-6 py-4 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
-                >
-                  <Leaf className="w-4 h-4 text-sage-400" /> Plant Care Guide
-                </Link>
               </div>
-
-              {/* Quick Nursery Metrics */}
-              <div className="grid grid-cols-3 gap-4 pt-6 border-t border-forest-800/80 max-w-md mx-auto lg:mx-0">
-                <div>
-                  <div className="text-2xl font-bold font-heading text-white">100%</div>
-                  <div className="text-xs text-cream-200/60">Transit Safe Gurantee</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold font-heading text-white">50k+</div>
-                  <div className="text-xs text-cream-200/60">Green Homes Built</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold font-heading text-white">4.9★</div>
-                  <div className="text-xs text-cream-200/60">Plant Parent Rating</div>
-                </div>
-              </div>
+              <ul className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2 pt-4 text-sm text-forest-900/70">
+                <li className="flex items-center gap-2"><Truck className="w-4 h-4 text-forest-700" /> 24h delivery</li>
+                <li className="flex items-center gap-2"><Wallet className="w-4 h-4 text-forest-700" /> Cash on delivery</li>
+                <li className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-forest-700" /> 7-day guarantee</li>
+              </ul>
             </div>
 
-            {/* Right Hero Visual Card */}
-            <div className="lg:col-span-5 relative">
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-forest-700/40 bg-forest-900 aspect-[4/5] max-w-md mx-auto">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=1200&q=85"
-                  alt="Lush Monstera Deliciosa by GamlaWala"
-                  className="w-full h-full object-cover"
-                />
-
-                {/* Floating Micro Card 1 */}
-                <div className="absolute top-6 left-6 bg-white/95 backdrop-blur-md text-forest-950 p-3.5 rounded-2xl shadow-xl flex items-center gap-3 border border-forest-800/10">
-                  <div className="w-10 h-10 rounded-xl bg-sage-100 flex items-center justify-center text-forest-800">
+            <div className="lg:col-span-6 relative">
+              <div className="relative max-w-md mx-auto lg:max-w-none lg:ml-auto lg:w-[88%]">
+                <div className="aspect-[4/5] rounded-t-[999px] rounded-b-3xl overflow-hidden bg-sage-100 shadow-2xl shadow-forest-900/15">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=1200&q=85"
+                    alt="Lush Monstera Deliciosa in a terracotta gamla"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="absolute -left-2 sm:-left-8 bottom-10 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3 border border-forest-900/5">
+                  <div className="w-10 h-10 rounded-full bg-sage-100 flex items-center justify-center">
                     <Sprout className="w-5 h-5 text-forest-700" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold block leading-tight">Monstera Deliciosa</span>
-                    <span className="text-[10px] text-sage-600 font-medium">₹899 · Includes Gamla</span>
-                  </div>
-                </div>
-
-                {/* Floating Micro Card 2 */}
-                <div className="absolute bottom-6 right-6 bg-forest-950/90 backdrop-blur-md text-cream-50 p-3.5 rounded-2xl shadow-xl flex items-center gap-3 border border-forest-700/50">
-                  <div className="w-8 h-8 rounded-full bg-forest-800 flex items-center justify-center text-sage-400">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <div className="text-left">
-                    <span className="text-xs font-bold block">7-Day Healthy Plant Guarantee</span>
-                    <span className="text-[10px] text-cream-200/70">Or free replacement</span>
+                    <p className="text-sm font-heading font-medium text-forest-950 leading-tight">Monstera Deliciosa</p>
+                    <p className="text-xs text-forest-900/60">Comes in a handmade gamla</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Official Brand Category Navigation Strip */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 sm:-mt-12 relative z-20">
-        <div className="bg-white rounded-2xl shadow-xl border border-forest-800/10 p-4 sm:p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Link
-            href="/shop?category=indoor-plants"
-            className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-cream-50 transition-colors group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-forest-800/10 flex items-center justify-center text-forest-800 group-hover:bg-forest-800 group-hover:text-cream-50 transition-all shadow-sm">
-              <IndoorPlantsIcon className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-heading font-bold text-sm text-forest-950 group-hover:text-forest-700 transition-colors">
-                Indoor Plants
-              </h4>
-              <p className="text-[11px] text-forest-900/60 font-medium">Low light & air purifiers</p>
-            </div>
-          </Link>
-
-          <Link
-            href="/shop?category=outdoor-plants"
-            className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-cream-50 transition-colors group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-forest-800/10 flex items-center justify-center text-forest-800 group-hover:bg-forest-800 group-hover:text-cream-50 transition-all shadow-sm">
-              <OutdoorPlantsIcon className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-heading font-bold text-sm text-forest-950 group-hover:text-forest-700 transition-colors">
-                Outdoor Plants
-              </h4>
-              <p className="text-[11px] text-forest-900/60 font-medium">Balcony & sunny greens</p>
-            </div>
-          </Link>
-
-          <Link
-            href="/shop?category=pots-planters"
-            className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-cream-50 transition-colors group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-terracotta-500/15 flex items-center justify-center text-terracotta-600 group-hover:bg-terracotta-500 group-hover:text-white transition-all shadow-sm">
-              <PotsPlantersIcon className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-heading font-bold text-sm text-forest-950 group-hover:text-terracotta-600 transition-colors">
-                Pots & Planters
-              </h4>
-              <p className="text-[11px] text-forest-900/60 font-medium">Handcrafted gamlas</p>
-            </div>
-          </Link>
-
-          <Link
-            href="/shop?category=seeds-gardening"
-            className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-cream-50 transition-colors group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-sage-500/20 flex items-center justify-center text-forest-800 group-hover:bg-forest-800 group-hover:text-cream-50 transition-all shadow-sm">
-              <SeedsGardeningIcon className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-heading font-bold text-sm text-forest-950 group-hover:text-forest-700 transition-colors">
-                Seeds & Gardening
-              </h4>
-              <p className="text-[11px] text-forest-900/60 font-medium">Organic soil & potting</p>
-            </div>
-          </Link>
         </div>
       </section>
 
@@ -208,27 +103,27 @@ export default async function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-forest-600 block mb-1">
+            <span className="eyebrow block mb-2">
               Curated Collections
             </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold font-heading text-forest-950">
-              Find the Perfect Green for Your Space
+            <h2 className="text-3xl sm:text-4xl font-medium font-heading text-forest-950">
+              Plants &amp; pots, sold separately
             </h2>
           </div>
           <Link
             href="/shop"
             className="text-xs font-bold text-forest-800 hover:text-forest-600 flex items-center gap-1 group"
           >
-            Browse All Categories <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            Browse everything <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {categories.map((cat) => (
             <Link
               key={cat.slug}
               href={`/shop?category=${cat.slug}`}
-              className="group relative rounded-2xl overflow-hidden bg-white border border-forest-800/10 hover:border-forest-700/30 hover:shadow-xl transition-all duration-300 flex flex-col aspect-[4/5]"
+              className="group relative rounded-[28px] overflow-hidden bg-white shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 flex flex-col aspect-[3/4]"
             >
               <div className="relative flex-1 overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -238,9 +133,6 @@ export default async function HomePage() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-forest-950/90 via-forest-950/20 to-transparent" />
-                <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-forest-950 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
-                  {cat.count}
-                </span>
                 <div className="absolute bottom-4 left-4 right-4 text-cream-50">
                   <h3 className="font-heading font-bold text-lg leading-tight mb-1 group-hover:text-sage-300 transition-colors">
                     {cat.name}
@@ -257,11 +149,11 @@ export default async function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-forest-600 block mb-1">
-              Top Rated by Indian Plant Parents
+            <span className="eyebrow block mb-2">
+              Popular in {SITE.city}
             </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold font-heading text-forest-950">
-              Nursery Best Sellers 🌱
+            <h2 className="text-3xl sm:text-4xl font-medium font-heading text-forest-950">
+              Best Sellers
             </h2>
           </div>
           <Link
@@ -272,16 +164,41 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-8">
           {products.slice(0, 6).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
+      {/* How it works */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-10">
+          <span className="eyebrow block mb-2">Simple &amp; local</span>
+          <h2 className="text-3xl sm:text-4xl font-medium font-heading text-forest-950">How ordering works</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+          {[
+            { icon: Sprout, title: 'Pick your plants', text: 'Browse the shop and add your favourites to the cart.' },
+            { icon: PackageCheck, title: 'We pack it fresh', text: 'Each plant is checked and packed carefully at our nursery.' },
+            { icon: Truck, title: `Delivered in ${SITE.city}`, text: PRIMARY_AREA.deliveryLabel + '. Free above ₹499.' },
+            { icon: Wallet, title: 'Pay your way', text: 'UPI, card or cash on delivery.' },
+          ].map((step, i) => (
+            <div key={step.title} className="bg-white rounded-3xl border border-forest-900/5 shadow-sm p-7 relative">
+              <span className="absolute top-4 right-5 text-3xl font-heading font-medium text-forest-800/10">{i + 1}</span>
+              <div className="w-11 h-11 rounded-xl bg-sage-100 text-forest-800 flex items-center justify-center mb-4">
+                <step.icon className="w-5 h-5" />
+              </div>
+              <h3 className="font-heading font-bold text-base text-forest-950 mb-1">{step.title}</h3>
+              <p className="text-sm text-forest-900/70 leading-relaxed">{step.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* GamlaWala Nursery Assurance */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-forest-900 text-cream-50 rounded-3xl p-8 sm:p-12 lg:p-16 relative overflow-hidden shadow-2xl">
+        <div className="bg-forest-900 text-cream-50 rounded-[32px] p-8 sm:p-14 lg:p-20 relative overflow-hidden shadow-2xl">
           <div className="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-forest-800/40 blur-3xl pointer-events-none" />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
@@ -289,11 +206,11 @@ export default async function HomePage() {
               <span className="text-xs font-bold uppercase tracking-widest text-sage-400">
                 The GamlaWala Difference
               </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-white">
-                Why 50,000+ Indian Homes Choose GamlaWala
+              <h2 className="text-3xl sm:text-4xl font-medium font-heading text-white">
+                Why {SITE.city} Chooses GamlaWala
               </h2>
               <p className="text-sm sm:text-base text-cream-200/80 leading-relaxed">
-                Unlike generic couriers, every plant leaves our greenhouse potted in proprietary organic potting soil (cocopeat, neem cake, perlite & vermicompost) in breathable packaging that lets plants breathe while protecting leaves from transit shock.
+                We are local, so your plant travels hours, not days. No long courier journeys and no transit shock. Every plant is potted in a healthy organic soil mix and delivered by us, and if anything arrives unhealthy within 7 days we replace it.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -303,7 +220,7 @@ export default async function HomePage() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-sm text-white">Acclimatized Plants</h4>
-                    <p className="text-xs text-cream-200/60">Grown for Indian weather and apartment lighting</p>
+                    <p className="text-xs text-cream-200/60">Chosen for Haryana heat, winters and home lighting</p>
                   </div>
                 </div>
 
@@ -313,7 +230,7 @@ export default async function HomePage() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-sm text-white">Ready-to-Place</h4>
-                    <p className="text-xs text-cream-200/60">Arrives pre-watered in premium pot with drainage</p>
+                    <p className="text-xs text-cream-200/60">Arrives potted, watered and ready to place</p>
                   </div>
                 </div>
               </div>
@@ -328,17 +245,40 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Official Nursery Stamp Badge */}
             <div className="lg:col-span-4 flex items-center justify-center">
-              <div className="p-4 rounded-3xl bg-forest-950/60 border border-forest-800/80 backdrop-blur-md shadow-2xl flex flex-col items-center text-center gap-3">
-                <GamlaWalaSeal className="w-36 h-36" />
-                <span className="text-xs font-semibold text-sage-300">Har Ghar Hariyali Guarantee</span>
-                <p className="text-[11px] text-cream-200/60 max-w-[200px]">
-                  100% Transit Safe Botanical Nursery Certification
+              <div className="p-6 rounded-3xl bg-forest-950/60 border border-forest-800/80 backdrop-blur-md shadow-2xl flex flex-col items-center text-center gap-3">
+                <div className="w-16 h-16 rounded-full bg-forest-800 flex items-center justify-center text-sage-300">
+                  <ShieldCheck className="w-8 h-8" />
+                </div>
+                <span className="text-sm font-semibold text-sage-300">7-Day Plant Guarantee</span>
+                <p className="text-xs text-cream-200/60 max-w-[200px]">
+                  Message us a photo within 7 days and we&apos;ll replace plants that arrive unhealthy.
                 </p>
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <h2 className="text-3xl sm:text-4xl font-medium font-heading text-forest-950 text-center mb-8">Common questions</h2>
+        <div className="space-y-3">
+          {[
+            { q: `Which areas of ${SITE.city} do you deliver to?`, a: `We deliver across ${SITE.city}. Enter your PIN code on any product page to confirm. ` },
+            { q: 'How fast is delivery?', a: `${PRIMARY_AREA.deliveryLabel}. Orders placed before 4 PM are usually delivered the next morning.` },
+            { q: 'Can I pay cash on delivery?', a: 'Yes. You can pay by UPI, card or cash when the plant reaches you.' },
+            { q: 'What if my plant arrives damaged?', a: 'Send us a photo within 7 days and we will replace it free of charge.' },
+            { q: 'I am new to plants. What should I buy?', a: 'Start with a Snake Plant or Money Plant. They are hard to kill and need very little light. ' },
+          ].map((item) => (
+            <details key={item.q} className="group bg-white rounded-3xl border border-forest-900/5 shadow-sm px-5 py-4 open:shadow-md">
+              <summary className="cursor-pointer list-none flex items-center justify-between gap-4 font-heading font-semibold text-sm text-forest-950">
+                {item.q}
+                <span className="text-forest-700 transition-transform group-open:rotate-45 text-xl leading-none">+</span>
+              </summary>
+              <p className="mt-3 text-sm text-forest-900/70 leading-relaxed">{item.a}</p>
+            </details>
+          ))}
         </div>
       </section>
     </div>

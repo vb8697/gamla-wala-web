@@ -11,10 +11,10 @@ export default function NotFound() {
           <GamlaWalaLogo variant="stacked" size="lg" />
         </div>
         <div className="space-y-2">
-          <span className="text-xs font-bold uppercase tracking-widest text-terracotta-500">
+          <span className="eyebrow">
             404 — Plant Not Found
           </span>
-          <h1 className="text-3xl font-extrabold text-forest-950">
+          <h1 className="text-3xl font-medium text-forest-950">
             This Branch Doesn&apos;t Exist
           </h1>
           <p className="text-sm text-forest-900/70">
@@ -24,13 +24,13 @@ export default function NotFound() {
         <div className="pt-2 flex items-center justify-center gap-3">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 bg-forest-800 hover:bg-forest-900 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 bg-forest-900 hover:bg-forest-800 text-cream-50 font-medium px-6 py-3 rounded-full text-sm transition-colors"
           >
             <Home className="w-4 h-4" /> Return Home
           </Link>
           <Link
             href="/shop"
-            className="inline-flex items-center gap-2 bg-cream-100 hover:bg-cream-200 text-forest-900 font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors border border-forest-800/10"
+            className="inline-flex items-center gap-2 border border-forest-900/25 hover:bg-forest-900 hover:text-cream-50 text-forest-900 font-medium px-6 py-3 rounded-full text-sm transition-colors"
           >
             <ArrowLeft className="w-4 h-4" /> Shop Plants
           </Link>

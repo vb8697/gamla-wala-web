@@ -298,7 +298,7 @@ export function CartDrawer() {
               <Link
                 href="/cart"
                 onClick={() => setIsOpen(false)}
-                className="w-full bg-forest-900 hover:bg-forest-800 text-cream-50 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
+                className="w-full bg-forest-900 hover:bg-forest-800 text-cream-50 font-medium py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
               >
                 Proceed to Checkout <ArrowRight className="w-4 h-4" />
               </Link>
